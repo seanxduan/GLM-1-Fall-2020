@@ -1,0 +1,45 @@
+---
+title: "Mathematical Expressions in Rmd"
+author: "Kyle Ripley"
+date: "8/30/2019"
+output: pdf_document
+linkcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Why?
+
+Often when you're writing papers (or doing homework) you'll need to write out mathematical expressions of formulas to make your work clear. For example, "First we add x and y, then divide by z, and then take the square root of the result..." could be written much more clearly as a formula: $\sqrt{(x+y)/z}$
+
+# How?
+
+Writing out equations in R Markdown (or more broadly, LaTeX) is pretty straightforward once you get a handle on the syntax.
+
+## How to display the equation
+
+To write an inline equation (such as the one above that appears inline with the text), you surround the equation syntax with single dollar signs.
+
+To write a centered, separated equation (like you normally will in papers/homeworks), you surround the equation syntax with two dollar signs. Like this: $$\sqrt{(x+y)/z}$$
+
+## How to structure your equations
+
+Writing simple expressions is easy: `$x+y$` gives you $x+y$, `$(x+y)*7$` gives you $(x+y)*7$, etc.
+
+It gets more complicated when you have a lot of elements that need to be nested inside of each other, as with the formula for standard deviation: $$\sigma = \sqrt{\frac{\sum\limits_{i=1}^{n} \left(x_{i} - \bar{x}\right)^{2}} {n-1}}$$
+
+## In class practice
+
+I'll write some example equations on the board, and then we'll work on writing them out together as a class.
+
+# Handy Resources?
+
+Yes, please!
+
+[This one](https://www.calvin.edu/~rpruim/courses/s341/S17/from-class/MathinRmd.html) has an exhaustive section on Greek letters.
+
+[This one](http://www.malinc.se/math/latex/basiccodeen.php) has some handy tips on formatting and some good examples.
+
+[This one](http://www.montana.edu/rotella/documents/502/MarkdownEqnExamples.Rmd) is not pretty, but I felt I had to include it since this is the one I originally learned from.

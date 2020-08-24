@@ -1,0 +1,74 @@
+---
+title: "Example R Markdown"
+author: "Kyle Ripley"
+date: "8/23/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Some tips for using R Markdown
+
+## Formatting your code chunks
+
+When you're making your code chunks inside of your .rmd files, you have a number of options that you can choose to use or not use depending on the situation. Below is an example code chunk (note that these options are only viewable in the .rmd file, not the knitted pdf, html, or word doc).
+
+```{R NAME, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+# This chunk is to illustrate some available options
+```
+
+* NAME - can be changed to name the chunk (this is useful for keeping track of long documents with many chunks of code)
+    + note that no two chunks may have the same name
+* eval= - can be set to TRUE to run the code in the chunk or set to FALSE to not run the code in the chunk
+* echo= - can be set to TRUE to show the chunk in the document or set to FALSE to hide the chunk in the document
+* message= - can be set to TRUE to display messages from the code or set to FALSE to hide messages
+* warning= - can be set to TRUE to display warnings from the code or set to FALSE to hide warnings
+
+## Helpful resources
+
+As always, I'm going to strongly recommend Google. If there's ever anything you're not sure of how to do, odds are that someone else has asked the same question somewhere on the internet.
+
+There are also some helpful cheatsheet resources for R Markdown, such as [this](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf).
+
+# Downloading Papaja
+
+As you found out on Friday, not all R packages are available from the CRAN server. Sometimes we have to do a bit more work.
+
+For full instructions, we can go to the [papaja Github page](https://github.com/crsh/papaja).
+
+# Finishing up stuff from Friday
+
+There are a couple things you'll need to know how to do for your first homework that we didn't get to on Friday - namely making graphs in R. We'll make these using the base R graphics for now, but later on in the semester, we'll make much nicer looking versions of our graphs.
+
+## Data
+
+Like we've talked about previously, any packages, data, or other objects that you wish to use inside of your R Markdown documents must be called (or loaded or however you wish to word it) inside of the R Markdown document itself. Because of that, we need to re-create our age dataset from Friday inside of this document.
+
+```{R data, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+grad_age <- data.frame(age = c(38, 26, 24, 25, 33, 22, 24,
+                               27, 28, 28, 29, 22, 23, 29, 32),
+                       pred_age = rep(x = 26, times = 15))
+```
+
+## Basic Plots
+
+Now we'll get on to the plots. For your homework, you'll need to know how to make a basic boxplot and a basic histogram. These can be done pretty simply with the code below.
+
+### Boxplot
+
+```{R boxplot, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+boxplot(x = grad_age$age, data = grad_age,
+        main = "Grad Age Data", xlab = "Example Boxplot",
+        ylab = "Student Ages")
+```
+
+### Histogram
+
+```{R histogram, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+hist(x = grad_age$age, data = grad_age,
+     breaks = c(21, 24, 27, 30, 33, 36, 39),
+     main = "Grad Age Data", xlab = "Student Ages",
+        ylab = "Number of Students")
+```
