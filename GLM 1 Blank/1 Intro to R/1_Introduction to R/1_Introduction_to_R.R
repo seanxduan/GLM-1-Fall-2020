@@ -7,7 +7,7 @@
 # The RStudio environment
 
 ## Note: anything written in an R script (this type of document)
-## will be interpretted by R as code UNLESS you specify that it
+## will be interpreted by R as code UNLESS you specify that it
 ## isn't code by putting the number sign in front of it.
 
 ## As you can see, RStudio splits your display into 4 distinct quadrants:
@@ -23,7 +23,7 @@
 ## To start our voyage into R, let's point out that it can function
 ## like a simple calculator.
 
-___ + ___
+2 + 2
 
 ## Note: to run the above code, you can do the following:
 ## click the Run button while your cursor is on the correct line,
@@ -31,23 +31,23 @@ ___ + ___
 ## or highlight the code you wish to run and do either of the two
 ## previously mentioned methods.
 
-___ - ___
+2 - 2
 
-___ * ___
+2 * 3
 
-___ / ___
+8 / 2
 
-___ ^ ___
+5 ^ 2
 
 ## But beyond simple arithmetic, R can evaluate logical arguments as well.
 
-___ < ___
+1 < 10
 
-___ > ___
+1 > 10
 
-___ == ___ ## Double equal sign means "is equal to"
+10 == 10 ## Double equal sign means "is equal to"
 
-___ != ___ ## Exclamation equal means "is not equal to"
+10 != 11 ## Exclamation equal means "is not equal to"
 
 #######################
 # Assigning Variables #
@@ -58,7 +58,7 @@ ___ != ___ ## Exclamation equal means "is not equal to"
 ## We used 10 a lot earlier, so let's save ourselves some time
 ## by assigning it to a variable.
 
-___ <- ___
+x <- 10
 
 ## Note: you can also use a single equal sign to assign in R,
 ## but I recommend sticking to <-
@@ -66,25 +66,26 @@ ___ <- ___
 
 ## We can use variable just like we can any other input.
 
-___ + ___
+x + 5
 
-___ == ___
+x == 10
 
 ## Let's make another variable, y.
 
-___ <- ___
+y <- 4
 
 ## Time for more arithmetic!
 
-___ + ___
+x + y
 
-___ <- ___ / ___
+z <- x / y
 
+z
 ###################
 # Using Functions #
 ###################
 
-## To effectively use R, we need to start eploring functions.
+## To effectively use R, we need to start exploring functions.
 ## Functions are the meat and potatoes of R, and they're how
 ## you'll accomplish the vast majority of your work.
 ## They all follow a general format:
@@ -97,7 +98,9 @@ name_of_function(argument1 = blah, argument2 = blah blah, etc.)
 ## One of our most basic functions is sum(), which simply 
 ## sums all of the numbers passed to it.
 
-?___
+sum(1,2,3,4)
+
+?sum
 
 ## Running a question mark followed by a function name
 ## will take you to that functions documentation.
@@ -105,7 +108,7 @@ name_of_function(argument1 = blah, argument2 = blah blah, etc.)
 
 ## We now know that sum() takes two arguments. 
 
-___(___ = ___, ___ = ___)
+sum(... = 1:6, na.rm = F)
 
 ## Note: in general, it's good to include the argument names.
 ## Note2: using a colon (:) tells R that you want to include
@@ -124,36 +127,38 @@ ___(___ = ___, ___ = ___)
 
 ## Let's make a vector of the numbers from 1 to 10 and call it x.
 
-___ <- ___(___)
+x <- c(1:10)
 
 ## Note: This will overwrite our original x variable.
 
 ## Now, let's create a new vector, y, which contains
 ## the numbers 11 though 16, a missing value for 17,
-## and 18 through 20.
+## and 18 through 20.f
 
-___ <- ___(___, ___, ___)
+y <- c(11:16,NA,18:20)
 
 ## Note: R uses "NA" to denote missing values
 
 ## Let's now use a function to calculate the averages
 ## of both of our vectors.
 
-___(___)
+mean(x)
 
-___(___)
+mean(y)
 
 ## That didn't seem to work for y. Let's take a peek
 ## at the function documentation.
 
-?___
+?mean
 
-___(___, ___ = ___)
+mean(y, na.rm = F)
+
+mean(y, na.rm = T)
 
 ## We have another function that is helpful for making vectors, rep().
 ## Let's look at it's R documentation.
 
-?___
+?rep
 
 ## This function will replicate whatever input is given to it. The 
 ## way that it replicates can be specified with the times and each 
@@ -161,31 +166,35 @@ ___(___, ___ = ___)
 
 ## For example, if we wanted to create a vector of 10 1s, we could do:
 
-___ <- ___(___)
-___
+d <- c(1,1,1,1,1,1,1,1,1,1)
+
+
 
 ## Note: running the name of a variable/vector will return its value.
 
 ## Instead, we can use our new friend, rep()
 
-___ <- ___(___ = ___, ___ = ___)
-___
+e <- rep(x = 1, times = 10)
+
+e==d
 
 ## If we wanted to make a vector that included the 
 ## numbers 1 through 5 reapeted 3 times:
 
-g <- ___(1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5)
+g <- c(1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5)
 g
 
 ## Or, we could use rep() and make our lives easier
 
-___ <- ___(x = ___, times = ___)
-___
+h <- rep(x = 1:5, times = 3)
 
+h
+
+h==g
 ## If on the other hand, we wanted the numbers to be in order,
 ## we could use the each argument.
 
-i <- ___(x = ___, each = ___)
+i <- rep(x = 1:5, each = 3)
 i
 
 ########################
@@ -203,7 +212,9 @@ i
 ## use already created vectors or to create the vectors in
 ## your code. We'll do this both ways.
 
-old_vectors <- ___(___, ___, ___)
+?data.frame
+
+old_vectors <- data.frame(g, h, i)
 
 ## Note: Looking at your environment will reveal a new section, data.
 ## You can view data here as if they were a spreadsheet by calling
@@ -211,9 +222,9 @@ old_vectors <- ___(___, ___, ___)
 
 ## Now, we'll create a data frame from scratch using your age data.
 
-___ <- ___(___ = ___(38, 26, 24, 25, 33, 22, 24,
+grad_age <- data.frame(age = c(38, 26, 24, 25, 33, 22, 24,
                                27, 28, 28, 29, 22, 23, 29, 32),
-              ___ = ___(x = ___, ___ = ___))
+              pred_age = rep(x = 26, times = 15))
 
 ##########################
 # Age Example from Class #
@@ -223,12 +234,12 @@ ___ <- ___(___ = ___(38, 26, 24, 25, 33, 22, 24,
 ## We'll use some new notation - the dollar sign - to specify
 ## variables inside of our data frame.
 
-mean_age <- ___(___$___)
+mean_age <- mean(grad_age$age)
 
 ## We'll now cover how to add new variables to our dataframe
 ## using the same notation. We'll do this with our model error.
 
-grad_age$error <- ___ - ___
+grad_age$error <- grad_age$age - grad_age$pred_age
 grad_age
 
 ## As you can see, that calculated the error and made a new column.
