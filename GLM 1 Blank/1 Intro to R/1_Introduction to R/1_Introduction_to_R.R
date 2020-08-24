@@ -245,34 +245,34 @@ grad_age
 ## As you can see, that calculated the error and made a new column.
 ## We'll do the same for some other measures.
 
-grad_age$abs_error <- ___(___$___)
+grad_age$abs_error <- abs(grad_age$error)
 
-grad_age$sqr_error <- ___$___^___
+grad_age$sqr_error <- grad_age$error^2
 
 ## We'll now calculate some of our other measures using the formulas 
 ## from your book.
 
-error_count <- ___(___$___ ___ ___)
+error_count <- sum(grad_age$error !=0)
 
-error_sum <- ___(___$___)
+error_sum <- sum(grad_age$error)
 
-SAE <- ___(___$___)
+SAE <- sum(grad_age$abs_error)
 
-SSE <- ___(___$___)
+SSE <- sum(grad_age$sqr_error)
 
 ## And some more
 
-grad_age$mean_error <- ___$___ - ___
+grad_age$mean_error <- grad_age$age - mean_age
 
-grad_age$mean_error_sq <- ___$___^___
+grad_age$mean_error_sq <- grad_age$mean_error^2
 
-PRE <- ___ - ___(___$___)/___
+PRE <- 1 - sum(grad_age$mean_error_sq)/SSE
 
-MSE <- ___(___$___)/(___(___$___) - ___)
+MSE <- sum(grad_age$mean_error_sq)/(length(grad_age$age) - 1)
 
-SD <- ___(___)
+SD <- sqrt(MSE)
 
-CV <- ___/___
+CV <- SD/mean_age
 
 #######################
 # Installing Packages #
@@ -293,14 +293,14 @@ install.packages("name_of_package")
 ## Let's go ahead and install some packages that we'll be
 ## using throughout the semester.
 
-___("___") # This is a large suite of packages
-___("___")
+install.packages("tidyverse") # This is a large suite of packages
+install.packages("papaja")
 
 ## When you want to use functions from a package that you've
 ## installed, you need to load the package by doing
 ## the following:
 
-___(___)
+library(tidyverse)
 
 ## Note: Since tidyverse is now technically an object,
 ## it doesn't need to be in quotations.
