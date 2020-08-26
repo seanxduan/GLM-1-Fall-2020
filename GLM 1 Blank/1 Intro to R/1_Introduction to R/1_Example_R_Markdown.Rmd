@@ -26,6 +26,11 @@ When you're making your code chunks inside of your .rmd files, you have a number
 * message= - can be set to TRUE to display messages from the code or set to FALSE to hide messages
 * warning= - can be set to TRUE to display warnings from the code or set to FALSE to hide warnings
 
+```{R testcode}
+2+2+5+6
+
+```
+
 ## Helpful resources
 
 As always, I'm going to strongly recommend Google. If there's ever anything you're not sure of how to do, odds are that someone else has asked the same question somewhere on the internet.
@@ -59,6 +64,9 @@ Now we'll get on to the plots. For your homework, you'll need to know how to mak
 ### Boxplot
 
 ```{R boxplot, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+?boxplot
+
+
 boxplot(x = grad_age$age, data = grad_age,
         main = "Grad Age Data", xlab = "Example Boxplot",
         ylab = "Student Ages")
@@ -67,6 +75,7 @@ boxplot(x = grad_age$age, data = grad_age,
 ### Histogram
 
 ```{R histogram, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+?hist
 hist(x = grad_age$age, data = grad_age,
      breaks = c(21, 24, 27, 30, 33, 36, 39),
      main = "Grad Age Data", xlab = "Student Ages",
