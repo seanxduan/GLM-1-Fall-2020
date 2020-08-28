@@ -80,4 +80,19 @@ hist(x = grad_age$age, data = grad_age,
      breaks = c(21, 24, 27, 30, 33, 36, 39),
      main = "Grad Age Data", xlab = "Student Ages",
         ylab = "Number of Students")
+
+#showing different 'buckets' for break automatically created
+
+hist(x = grad_age$age, data = grad_age,
+          main = "Grad Age Data", xlab = "Student Ages",
+        ylab = "Number of Students")
+#10 wide buckets
+
+hist(x = grad_age$age, data = grad_age,
+     breaks = c(10,20,30,40),
+     main = "Grad Age Data", xlab = "Student Ages",
+        ylab = "Number of Students")
+
+
+
 ```
