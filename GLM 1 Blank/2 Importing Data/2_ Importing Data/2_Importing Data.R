@@ -179,9 +179,9 @@ internet_potatoes <- read_tsv("https://raw.githubusercontent.com/KRR1114/class_f
 # You can also download files through R so 
 # that you can use them locally. This also
 # improves reproducibility for your analyses.
-___("https://raw.githubusercontent.com/KRR1114/class_files/master/potatoes.txt", 
-    ___ = "local_potatoes.txt")
-local_potatoes <- ___("local_potatoes.txt", col_names = FALSE)
+download.file("https://raw.githubusercontent.com/KRR1114/class_files/master/potatoes.txt", 
+    destfile = "local_potatoes.txt")
+local_potatoes <- read_tsv("local_potatoes.txt", col_names = FALSE)
 
 
 ###############################
@@ -195,33 +195,33 @@ local_potatoes <- ___("local_potatoes.txt", col_names = FALSE)
 #####
 
 download.file("https://github.com/KRR1114/class_files/blob/master/wine.RData?raw=true",
-              destfile = "wine.RData")
-___("wine.RData")
+              destfile = "wine.RData", mode = "wb")
+load(file ="D:/Grad School/2020-2021/Teaching - GLM 1/GLM-1-Fall-2020/GLM 1 Blank/2 Importing Data/2_ Importing Data/wine.RData")
 
 download.file("https://github.com/KRR1114/class_files/blob/master/weather.rds?raw=true",
-              destfile = "weather.rds")
-weather <- ___("weather.rds")
+              destfile = "weather.rds", mode = "wb")
+weather <- read_rds("weather.rds")
 
 #######
 # SAS #
 #######
 
 download.file("https://github.com/KRR1114/class_files/blob/master/sales.sas7bdat?raw=true",
-              destfile = "sas7bdat")
-sales <- ___("sas7bdat")
+              destfile = "sas7bdat", mode = "wb")
+sales <- read_sas("sas7bdat")
 
 #########
 # STATA #
 #########
 
 download.file("https://github.com/KRR1114/class_files/blob/master/trade.dta?raw=true",
-              destfile = "trade.dta")
-trade <- ___("trade.dta")
+              destfile = "trade.dta", mode = "wb")
+trade <- read_dta("trade.dta")
 
 ########
 # SPSS #
 ########
 
 download.file("https://github.com/KRR1114/class_files/blob/master/person.sav?raw=true",
-              destfile = "person.sav")
-traits <- ___("person.sav")
+              destfile = "person.sav", mode = "wb")
+traits <- read_sav("person.sav")
