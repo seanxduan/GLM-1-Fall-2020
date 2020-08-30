@@ -18,11 +18,11 @@ library(dplyr) # part of the tidyverse
 # you know, it's the topic of this week's lesson.
 # DON'T IMPORT NOW.
 # However, the files you should be sure to have ready are:
-hotdogs.txt <- "/Users/Kyle/Desktop/MizzouWork/GLM (TA)/2019 - Spring/Data/hotdogs.txt"
-potatoes.csv <- "/Users/Kyle/Desktop/MizzouWork/GLM (TA)/2019 - Spring/Data/potatoes.csv"
-potatoes.txt <- "/Users/Kyle/Desktop/MizzouWork/GLM (TA)/2019 - Spring/Data/potatoes.txt"
-urbanpop.xls <- "/Users/Kyle/Desktop/MizzouWork/GLM (TA)/2019 - Spring/Data/urbanpop.xls"
-urbanpop.xlsx <- "/Users/Kyle/Desktop/MizzouWork/GLM (TA)/2019 - Spring/Data/urbanpop.xlsx"
+hotdogs.txt <- "D:/Grad School/2020-2021/Teaching - GLM 1/GLM-1-Fall-2020/GLM 1 Blank/2 Importing Data/2_ Importing Data/hotdogs.txt"
+potatoes.csv <- "D:/Grad School/2020-2021/Teaching - GLM 1/GLM-1-Fall-2020/GLM 1 Blank/2 Importing Data2_ Importing Data/potatoes.csv"
+potatoes.txt <- "D:/Grad School/2020-2021/Teaching - GLM 1/GLM-1-Fall-2020/GLM 1 Blank/2 Importing Data/2_ Importing Data/potatoes.txt"
+urbanpop.xls <- "D:/Grad School/2020-2021/Teaching - GLM 1/GLM-1-Fall-2020/GLM 1 Blank/2 Importing Data/2_ Importing Data/urbanpop.xls"
+urbanpop.xlsx <- "D:/Grad School/2020-2021/Teaching - GLM 1/GLM-1-Fall-2020/GLM 1 Blank/2 Importing Data/2_ Importing Data/urbanpop.xlsx"
 # Note: when we call on these file paths, we won't need to 
 # put them in quotation marks; however, if you're putting
 # a file path inside of an import command, you will need
@@ -33,7 +33,7 @@ urbanpop.xlsx <- "/Users/Kyle/Desktop/MizzouWork/GLM (TA)/2019 - Spring/Data/urb
 ##############
 
 ## In this lesson, we'll cover the basics of importing data
-# from some of the most common data file structes and sources:
+# from some of the most common data file structures and sources:
 # Flat Files - e.g., .csv, .txt, etc.
 # Excel Files - e.g., xls, xlsx
 # Web Files
@@ -43,7 +43,7 @@ urbanpop.xlsx <- "/Users/Kyle/Desktop/MizzouWork/GLM (TA)/2019 - Spring/Data/urb
 # with the tidyverse packages. We'll focus on these instead
 # of the functions available in base R, because these are,
 # in general, faster and more consistent across functions.
-# If you're isinterested in using the basic commands, 
+# If you're interested in using the basic commands, 
 # the functions in base R operate similarly.
 
 
@@ -66,19 +66,22 @@ read_delim(file, delim)
 # It's important to note that this is a 
 # tab-delimited file with no column names.
 # We'll use the col_names argument to fix that.
-names1 <- ___("___", "___", "___", "___", "___",
-            "___", "___", "___")
-potatoes_txt <- ___(file = ___, 
-                    ___ = "___", 
-                    ___ = ___)
+names1 <- c("area", "temp", "size", "storage", "method",
+            "texture", "flavor", "moistness")
+potatoes_txt <- read_delim(file = "potatoes.txt", 
+                    delim = "\t", 
+                    col_names = names1)
+
+getwd()
+setwd("D:/Grad School/2020-2021/Teaching - GLM 1/GLM-1-Fall-2020/GLM 1 Blank/2 Importing Data/2_ Importing Data")
 
 # If for some reason we only wanted certain rows,
 # we could also use the skip and n_max arguments.
-partial_potato <- ___(file = potatoes.txt,
-                      ___ = "___",
-                      ___ = ___,
-                      ___ = ___,
-                      ___ = names1)
+partial_potato <- read_delim(file = "potatoes.txt",
+                      delim = "\t",
+                      skip = 5,
+                      n_max = 10,
+                      col_names = names1)
 # This skips the first 5 observations and imports
 # only the next 10 observations.
 
@@ -90,25 +93,25 @@ partial_potato <- ___(file = potatoes.txt,
 # i = integer
 # l = logical
 # _ = skip the column
-new_potatoes <- ___(file = potatoes.txt,
+new_potatoes <- read_delim(file = "potatoes.txt",
                            delim = "\t",
                            skip = 5,
                            n_max = 10,
-                    ___ = "___",
+                    col_types = "cccccccc",
                            col_names = names1)
-___(___)
+str(new_potatoes)
 
 # We can instead use a collector function to
 # pass col_types to our data. This is 
 # particularly handy for factors.
-fac <- ___(___ = ___("___", "___", "___"))
-int <- ___()
+fac <- col_factor(levels = c("Beef", "Meat", "Poultry"))
+int <- col_integer()
 
-hotdog_factor <- ___(file = ___,
-                            delim = "___",
-                            col_names = ___("___", "___", "___"),
-                            col_types = ___(___, ___, ___))
-___(hotdog_factor)
+hotdog_factor <- read_delim(file = "hotdogs.txt",
+                            delim = "\t",
+                            col_names = c("type", "calories", "sodium"),
+                            col_types = list(fac, int, int))
+str(hotdog_factor)
 
 # It gets a little old having to specify the delim = argument over
 # and over again. Surely there's a way to deal with that?
@@ -122,7 +125,7 @@ ___(hotdog_factor)
 # This function is a wrapper for read_delim(). That means
 # that it has all the same arguments, except its defaults
 # are set to import CSV files.
-potatoes_csv <- ___(file = potatoes.csv)
+potatoes_csv <- read_csv(file = "potatoes.csv")
 # Notice that we didn't have to specify the delim as a comma
 # or provide column names. The default for read_csv()
 # assumes that column names are present.
@@ -138,7 +141,7 @@ potatoes_csv <- ___(file = potatoes.csv)
 
 # What about tab seperated value files, you might ask?
 # There's another wrapper to help with those. read_tsv()
-potatoes_tsv <- ___(file = potatoes.txt,
+potatoes_tsv <- read_tsv(file = "potatoes.txt",
                          col_names = names1)
                          
 
@@ -151,15 +154,15 @@ potatoes_tsv <- ___(file = potatoes.txt,
 ##########
 
 # One super useful function of the ReadXL
-# packagge allows us to view the sheet names
+# package allows us to view the sheet names
 # of an excel file.
-___(___)
+excel_sheets("urbanpop.xlsx")
 
 # Similar to previous functions, we can use
 # read_excel() to import the data.
-pop_1 <- ___(path = ___, ___ = ___)
-pop_2 <- ___(path = ___, ___ = "___")
-pop_3 <- ___(path = ___, ___ = ___)
+pop_1 <- read_excel(path = "urbanpop.xlsx", sheet = 1)
+pop_2 <- read_excel(path = "urbanpop.xlsx", sheet = "1967-1974")
+pop_3 <- read_excel(path = "urbanpop.xlsx", sheet = 3)
 # Notice that you can use the sheet name or number.
 
 ###############
@@ -169,9 +172,9 @@ pop_3 <- ___(path = ___, ___ = ___)
 # One particularly great thing about importing
 # data in R is that you can import it directly
 # from the internet - no downloading required!
-internet_pools <- ___("https://raw.githubusercontent.com/KRR1114/class_files/master/swimming_pools.csv")
-internet_potatoes <- ___("https://raw.githubusercontent.com/KRR1114/class_files/master/potatoes.txt",
-                              col_names = FALSE)
+internet_pools <- read_csv("https://raw.githubusercontent.com/KRR1114/class_files/master/swimming_pools.csv")
+internet_potatoes <- read_tsv("https://raw.githubusercontent.com/KRR1114/class_files/master/potatoes.txt",
+                              col_names = names1)
 
 # You can also download files through R so 
 # that you can use them locally. This also
