@@ -43,3 +43,8 @@ Yes, please!
 [This one](http://www.malinc.se/math/latex/basiccodeen.php) has some handy tips on formatting and some good examples.
 
 [This one](http://www.montana.edu/rotella/documents/502/MarkdownEqnExamples.Rmd) is not pretty, but I felt I had to include it since this is the one I originally learned from.
+
+## Making Model A and Model C using LaTeX
+
+$$Model A = Y_{response} = \beta_0 + \beta_1 * X_1  $$
+$$Model C = Y_{response} = \beta_0$$
