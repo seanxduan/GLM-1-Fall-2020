@@ -1,6 +1,6 @@
 ##########################
 ## Review and Extension ##
-##      Kye Ripley      ##
+##      Kyle Ripley     ##
 ##       9/6/19         ##
 ##########################
 
@@ -16,7 +16,7 @@ library(DescTools)
 
 # In our last session, we talked about ways to import data
 # and reviewed how to calculate some of the most commonly 
-# used desriptive statistics:
+# used decscriptive statistics:
 # mean, median, etc. 
 # Today, we'll expand on that a bit by looking at how to 
 # export data and calculate an F statistic.
@@ -29,6 +29,7 @@ library(DescTools)
 # inside of R. We'll just be focusing on the Sepal.Length
 # column.
 
+?iris
 dat <- iris
 View(dat)
 
@@ -67,6 +68,7 @@ var_sl <- var(dat$Sepal.Length)
 ###############
 
 mean_ci_sl <-qnorm(p = c(.025, .975), mean = mean_sl, sd = sd_sl)
+?qnorm
 
 ######################
 ## Model Comparison ##
@@ -128,10 +130,11 @@ PRE
 # Where PA and PC are the number of parameters in the
 # models respectively and n is the number of observations.
 
-PA <- ___
-PC <- ___
-n <- ___(___$___)
-F_stat <- (___/(___ - ___))/((___ - ___)/(___ - ___))
+PA <- 1
+PC <- 0
+n <- length(dat$Sepal.Length)
+F_stat <- (PRE/(PA - PC))/((1 - PRE)/(n - PA))
+F_stat
 
 ####################
 ## Exporting Data ##
@@ -139,10 +142,10 @@ F_stat <- (___/(___ - ___))/((___ - ___)/(___ - ___))
 
 # The packages we used last week for importing data also have 
 # functions for exporting your data, such as:
-
+library(tidyverse)
 ?write_csv
 
 # So, if we wanted to export our new version of the iris data,
 # we could do the following:
 
-write_csv(___ = ___, ___ = "/Users/Kyle/Desktop/iris.csv")
+write_csv(x = dat, path = "GLM 1 Blank/3 Tidying Data/3_Tidying Data/iris.csv")
