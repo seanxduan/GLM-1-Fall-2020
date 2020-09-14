@@ -19,14 +19,14 @@ dat <- read_csv("https://raw.githubusercontent.com/RipleyKyleR/class_files/maste
 
 # Predictions #
 
-mean_wallsupport <- ___(___$___)
+mean_wallsupport <- mean(dat$wall_support)
 mean_wallsupport
 
 # SSE #
 
-dat$Error_C <- ___$___-___
-dat$SqError_C <- ___$___^___
-SSE_C <- ___(___$___)
+dat$Error_C <- dat$wall_support-mean_wallsupport
+dat$SqError_C <- dat$Error_C^2
+SSE_C <- sum(dat$SqError_C)
 SSE_C
 
 ###########
@@ -35,51 +35,51 @@ SSE_C
 
 # Predictions #
 
-mean_trumpsupport <- ___(___$___)
+mean_trumpsupport <- mean(dat$trump_support)
 mean_trumpsupport
 
 # Slope #
 
-dat$X_mean <- ___$___-___
-slope_num <- ___(___$___*___$___)
-slope_denom <- ___(___$___^___)
-slope <- ___/___
+dat$X_mean <- dat$trump_support-mean_trumpsupport
+slope_num <- sum(dat$X_mean*dat$Error_C)
+slope_denom <- sum(dat$X_mean^2)
+slope <- slope_num/slope_denom
 slope
 
 # Intercept #
 
-intercept <- ___-___*___
+intercept <- mean_wallsupport-mean_trumpsupport*slope
 intercept
 
 # SSE #
 
-dat$Pred_A <- ___ + ___*___$___
-dat$Error_A <- ___$___-___$___
-dat$SqError_A <- ___$___^___
-SSE_A <- ___(___$___)
+dat$Pred_A <- intercept + slope*dat$trump_support
+dat$Error_A <- dat$wall_support-dat$Pred_A
+dat$SqError_A <- dat$Error_A^2
+SSE_A <- sum(dat$SqError_A)
 SSE_A
 
 #######
 # PRE #
 #######
 
-PRE <- ___-(___/___)
+PRE <- 1-(SSE_A/SSE_C)
 PRE
 
 #######
 #  F  #
 #######
 
-F_num <- ___/(___-___)
-F_denom <- (___-___)/(___-___)
-Fstat <- ___/___
+F_num <- PRE/(2-1)
+F_denom <- (1-PRE)/(729-2)
+Fstat <- F_num/F_denom
 Fstat
 
 #######
 #  t  #
 #######
 
-tstat <- ___(___)
+tstat <- sqrt(Fstat)
 tstat
 
 ################################
@@ -87,8 +87,8 @@ tstat
 ################################
 
 ?lm
-ModelA <- ___(___ ~ ___, ___ = ___)
-summary(___)
+ModelA <-lm(wall_support ~ trump_support, data = dat)
+summary(ModelA)
 
 ############################
 #  Mean Centered Predictor #
@@ -96,33 +96,33 @@ summary(___)
 
 # Predictions #
 
-dat$meancent_trumpsupport <- ___$___-___
-mean_mean_cent <- ___(___$___)
+dat$meancent_trumpsupport <- dat$trump_support-mean_trumpsupport
+mean_mean_cent <-mean(dat$meancent_trumpsupport)
 mean_mean_cent
 
 # Slope #
 
-dat$X_mean_cent <- ___$___-___
-slope_num2 <- ___(___$___*___$___)
-slope_denom2 <- ___(___$___^___)
-slope2 <- ___/___
+dat$X_mean_cent <- dat$meancent_trumpsupport-mean_trumpsupport
+slope_num2 <- sum(dat$X_mean_cent*dat$Error_C)
+slope_denom2 <- sum(dat$X_mean^2)
+slope2 <- slope_num2/slope_denom2
 slope2
 
 # Intercept #
 
-intercept_cent <- ___-___*___
+intercept_cent <- mean_wallsupport-slope*mean_mean_cent
 intercept_cent
 
 # 95% CI for Slope #
 
-MSE_A <- ___/(___-___)
+MSE_A <- SSE_A/(729-2)
 MSE_A
 
-var_trumpsupport <- ___(___$___)
+var_trumpsupport <- var(dat$trump_support)
 var_trumpsupport
 
-slope_CI <- ___((3.84*___)/((___-___)*___))
+slope_CI <- sqrt((3.84*MSE_A)/((729-1)*var_trumpsupport))
 slope_CI
 
 ?confint
-___(___ = ___, ___ = ___)
+confint(object = ModelA, level = 0.95)
