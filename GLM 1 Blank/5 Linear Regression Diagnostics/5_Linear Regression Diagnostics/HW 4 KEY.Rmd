@@ -1,0 +1,153 @@
+---
+title: "HW 4"
+author: "General Linear Models 1"
+date: "Due Date: 10/02/2020"
+output: pdf_document
+---
+
+# Data for this Assignment
+Data for assignment come from the following manuscript: 
+Shaffer, V. A., Scherer, L. D., Focella, E. S., Hinnant, A., Len-Rios, M. E., Zikmund-Fisher, B. J. (2017). What is the story with narratives? How using personal narratives in journalism changes health behavior. Health Communication, doi: http://dx.doi.org/10.1080/10410236.2017.1333562 
+
+
+This study was designed to examine the effect of a health news story about a person who developed a life-threatening illness (Stevens-Johnson Syndrome, SJS) after using Advil on subsequent Advil use (or other medication with ibuprofen as its active ingredient). All participants completed measures of numeracy (Subjective Numeracy—Fagerlin et al., 2008; Berlin Numeracy Test—Cokely, Galesic, Schulz et al., 2012), health literacy (Chew, Bradley, & Boyko, 2004), and thinking style (Rational-Experiential Inventory, 24-item short form). 
+
+The data file can be found in a .csv file on Canvas. The file contains data on 7 variables from 443 participants. Below are the definitions of these measures. Note the data file contains missing data labeled ‘NA’.
+
+# Items in the data file
+* Likelihood_TIME1—‘How likely are you to use Advil (or other medication with ibuprofen as the active ingredient) in the future?’ 1-5 point Likert scale
+*	Likelihood_TIME2—‘How likely are you to use Advil (or other medication with ibuprofen as the active ingredient) in the future?’ Assessed at two week follow up; same scale as above  
+* Rational_subcale—Rational subscale of the REI (Rational Experiential Inventory)
+* Experiential_subscale—Experiential subscale of the REI
+* HealthLit_SUM—Health literacy screening scale
+* SNS—Subjective Numeracy Scale
+* Berlin_cat—Berlin Numeracy Scale
+
+# Instructions for this assignment
+Use R Markdown to create a pdf answer sheet for this assignment, showing your code for each item as appropriate. Do all items below using R commands (unless you choose to use GPower for 7 and 8, in which case simply type your answers from GPower into your R Markdown document). 
+
+In this assignment, you will be testing the hypothesis that the Rational subscale of the REI is a significant predictor of intentions to use Advil in the future measured at Time 2 (two-weeks after the intervention)—**centering the predictor at the mean**
+
+# Questions
+
+1. First, write out the equations for Model A and Model C that test this hypothesis (2 points)
+
+**Model Comparison**
+\begin{align*}
+\text{Model A (Augmented Model): } Y_i &= \beta_0 + \beta_1(X_i-\overline{X}) + \epsilon_i \\
+\text{Model C (Compact Model): } Y_i &= \beta_0 + \epsilon_i \\
+\end{align*}
+
+```{r}
+HW4 <- read.csv("~/Dropbox/PSYCH 8710 GLM I/Datasets/Psych Faculty datasets/Shaffer Lab/Shaffer Lab Data.csv")
+```
+
+2. Create descriptive summaries of the predictor and outcome variables. (1 point)
+```{r}
+summary(HW4$Rational_subscale)
+summary(HW4$Likelihood_TIME2)
+```
+
+3. Construct a scatterplot showing the bivariate relationship between the predictor and the outcome. Use the "jitter" command to better see all of the observations on the Likert-scale item.(1 points)
+
+```{r}
+plot(HW4$Rational_subscale,jitter(HW4$Likelihood_TIME2,2), 
+     xlab = "Rational Subscale", ylab = "Likelihood of Ibuprofen Use", main= "Shaffer Lab Data")
+```
+
+4. Using the lm command, test the hypothesis that the Rational subscale of the REI is a significant predictor of intentions to use Advil in the future measured at Time 2 (two-weeks after the intervention)—**centering the predictor at the mean**. (2 points)
+
+```{r}
+Rat_mean <- mean(HW4$Rational_subscale, na.rm = TRUE)
+HW4$Rational_meancent <- HW4$Rational_subscale-Rat_mean 
+ModelA <- lm(Likelihood_TIME2 ~ Rational_meancent, data = HW4)
+summary(ModelA)
+```
+
+5. Write an interpretation for the intercept and slope of Model A (2 points)
+* Intercept: the predicted value of likeihood of using ibuprofen (3.53) when the Rational subscale score is zero. Because the predictor is mean-centered, 3.53 is also the mean of Y.
+* Slope: the predicted increase (0.03) in likelihood of using ibuprofen for every 1-unit increase in the Rational subscale.
+
+6. Calculate a measure of effect size for this relationship between X (Rational subscale of REI) and Y (Likelihood of ibuprofen use at Time 2). Interpret this value (2 points)
+```{r}
+eta_squared <- 1-((1-.022)*((261-1)/(261-2)))
+eta_squared
+```
+
+* PRE is given in output (.02). The inclusion of the rational subscale as a conditional predictor of likelihood of ibuprofen use reduce model error by 2%. 
+* Could alternatively calculate the unbiased estimate of eta squred, which would tell us similarly that this is a small effect size.
+
+7. Calculate the power associated with the test of the Rational subscale as a predictor of behavioral intentions (1 point)
+*This can be done using G-power. Doing this in R would also be acceptable, we just haven't formally taught this yet in class.
+*In G-Power, you would get an observed power of 0.68 (need to calculate the standard deviation of X and Y, which is why I have this computed below)
+```{r}
+sdRat <- sd(HW4$Rational_subscale, na.rm=TRUE)
+sdLik <- sd(HW4$Likelihood_TIME2, na.rm = TRUE)
+sdRat
+sdLik
+```
+
+8. Imagine we wanted to replicate this test with 80% power. What sample size is needed for this replication? (1 point).
+
+* Using G-Power, this sample size needed to replicate is 348.
+
+9. Examine the data for outliers in the predictor variable. Which (if any) observations would you consider as potential outliers? (2 points)
+
+```{r}
+#Calculating leverage
+library(olsrr)
+lev = hat(model.matrix(ModelA))
+plot(lev)
+HW4[lev>0.03,]
+```
+
+* I do not see any values of leverage that are so extreme that I would consider calling them outliers. 
+
+10. Examine the data for outliers in the outcome variable.Which (if any) observations would you consider as potential outliers? (2 points)
+
+```{r}
+#Calculating Studentized Deleted Residuals
+library(olsrr)
+ols_plot_resid_stud(ModelA)
+
+#HW4$stud.del.resid <- rstudent(ModelA, na.rm = TRUE)
+#ols_plot_resid_stud(ModelA)
+#HW4$r<-rstudent(ModelA)
+```
+
+* I do not see any values of studentized deleted residuals greater than 3. Therefore, I would not conisder any of the observations outliers based on this plot.
+
+11. Examine the data for outliers in the joint effect of the predictor and the outcome variable. Which (if any) observations would you consider as potential outliers? (2 points)
+
+```{r}
+#HW4$CooksD <- cooks.distance(ModelA)
+#plot(HW4$CooksD, ylab = "Cooks Distances")
+ols_plot_cooksd_bar(ModelA)
+ols_plot_cooksd_chart(ModelA)
+```
+
+* I do not see any values of Cooks D that are so extreme that I would consider calling them outliers.
+
+12. Examine the residuals for systematic violations of the assumption that the errors are normally distributed. How would you interpret this? (2 points)
+```{r}
+qqnorm(ModelA$residuals)
+qqline(ModelA$residuals)
+hist(ModelA$residuals)
+```
+
+* Although the data appear to have thinner tails than the normal distribution, I would not be concerned about violating the assumption of normality given this assumption is very robust to this type of violation.
+
+13. Examine the data for systematic violations of the assumption that the data are identically distributed. How would you interpret this? (2 points)
+```{r}
+library(car)
+plot(ModelA)
+```
+
+* Looking at the scale location plot, I do not see any evidence of heteroscedasticity.
+
+
+
+
+
+
+

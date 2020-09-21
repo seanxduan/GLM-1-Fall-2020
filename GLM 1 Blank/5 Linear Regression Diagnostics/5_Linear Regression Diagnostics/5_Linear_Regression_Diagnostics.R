@@ -27,8 +27,8 @@ dat <- read_tsv("https://raw.githubusercontent.com/RipleyKyleR/public_data_files
 # we'll create a model that has album sales as the outcome and money
 # spent on advertisements as the predictor.
 
-mAdvert <- ___(___ ~ ___, data = ___)
-___(mAdvert)
+mAdvert <- lm(sales ~ adverts, data = dat)
+summary(mAdvert)
 
 ############
 # Outliers #
@@ -44,9 +44,9 @@ ___(mAdvert)
 
 ?ggplot
 
-___(___ = ___, ___ = ___(___ = ___, ___ = ___)) + 
-  ___() +
-  ___(___ = "___", ___ = ___)
+ggplot(data = dat, mapping = aes(x = adverts, y = sales)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE)
 
 # Do you see any points that you think might be outliers?
 
@@ -61,20 +61,20 @@ ___(___ = ___, ___ = ___(___ = ___, ___ = ___)) +
 # First, let's create a new variable in our data frame
 # that contains the leverage value for each album.
 
-dat$___ <- ___(___(mAdvert))
+dat$lev <- hat(model.matrix(mAdvert))
 
 # We can then make a simple plot of these lever values
 # to see if any observations have a much larger value
 # than the other observations.
 
-___(dat$lev)
+plot(dat$lev)
 
 # Looking at the plot, we can see that we have a few
 # observations above .025 (a subjective value for this
 # data that doesn't translate to other data). Let's 
 # find out which observations those are.
 
-ind <- ___(dat$lev > 0.025)
+ind <- which(dat$lev > 0.025)
 dat[ind,]
 
 #################################
@@ -84,29 +84,29 @@ dat[ind,]
 # We can also use studentized deleted residuals to get an
 # idea of influential observations in our data.
 
-dat$stud_del_resid <- ___(mAdvert)
+dat$stud_del_resid <-rstudent(mAdvert)
 
 # We can get a handy plot of these values with the 
 # `ols_plot_resid_stud()` function.
 
-___(mAdvert)
+ols_plot_resid_stud_fit(mAdvert)
 
 # If we wish to make this plot without the default diagnostics,
 # we can pull the necessary values and plot it ourselves.
 # NOTE: we already pulled the studentized deleted residuals
 
-dat$predicted <- ___(mAdvert)
+dat$predicted <- predict(mAdvert)
 
-___(dat$___,dat$___)
+plot(dat$predicted,dat$stud_del_resid)
 
 #################
 # A Useful Plot #
 #################
 
-# We also have a plot that will look aat both leverage
+# We also have a plot that will look at both leverage
 # and studentized deleted residuals.
 
-___(mAdvert)
+ols_plot_resid_lev(mAdvert)
 
 ###################
 # Cook's Distance #
@@ -115,13 +115,13 @@ ___(mAdvert)
 # Cook's distance is also a useful diagnostic for our data.
 # We can use these values much like we've used the previous.
 
-dat$cooks_d <- ___(mAdvert) 
+dat$cooks_d <- cooks.distance(mAdvert) 
 
-___(dat$___, ylab = "Cook's Distance")
+plot(dat$cooks_d, ylab = "Cook's Distance")
 
 # But we also have more useful plots.
 
-___(mAdvert)
+ols_plot_cooksd_bar(mAdvert)
 
 #################################
 # Non-Normal Error Distribution #
@@ -130,9 +130,8 @@ ___(mAdvert)
 # It's also a good idea to get an idea of the structure
 # of your distribution of errors. We can do this easily
 # by making a qq plot.
-
-___(mAdvert$res) 
-___(mAdvert$res)
+qqnorm(mAdvert$res) 
+qqline(mAdvert$res)
 
 # Ideally, you want the errors to fall on the line.
 
@@ -145,9 +144,9 @@ ___(mAdvert$res)
 
 # Will again go back to using ggplot2 for this graph.
 
-___(___ = ___, mapping = ___(x = ___, y = ___)) +
-  ___() + 
-  ___(___ = "___", ___ = ___)
+ggplot(data = dat, mapping = aes(x = predicted, y = stud_del_resid)) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE)
 
 ############################
 # Removing Abberant Values #
@@ -160,4 +159,15 @@ ___(___ = ___, mapping = ___(x = ___, y = ___)) +
 # This can be helpful in determining if removing these values 
 # has a significant impact on your analyses.
 
-dat_no_infl <- ___[-___(___, ___),]
+dat_no_infl <-dat[-c(169, 184),]
+
+###############################
+# Bonus Material for HW/Test? #
+###############################
+
+plot(dat$attract, jitter(dat$sales, 3) ) 
+          
+dat$adverts
+summary(dat$adverts)
+
+dat$meanc_adverts<-dat$adverts-mean(dat$adverts)
