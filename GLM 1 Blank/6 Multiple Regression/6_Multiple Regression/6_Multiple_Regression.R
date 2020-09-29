@@ -16,9 +16,11 @@ library(haven)
 
 # Data used:
 dat <- read_sav("https://github.com/RipleyKyleR/public_data_files/blob/master/dataset%20for%20victoria.sav?raw=true") 
+
+which(is.na(dat))
 dat <- dat %>% 
-  ___(___(dat)) %>% 
-  ___(id, scorumin, pos, anxious, depcesd)
+  filter(complete.cases(dat)) %>% 
+  select(id, scorumin, pos, anxious, depcesd)
 
 # Data Key:
 
@@ -38,36 +40,36 @@ dat <- dat %>%
 # We can make a correlation matrix to examine the correlations
 # between all of our variables.
 
-___(___ = ___, ___ = ___, ___ = "___", ___ = "___", ___ = ___,
-    ___ = ___, ___ = "___")
+ggcorr(data = dat, nbreaks = 8, pallete = "RdBu", name = "r", label = T,
+    label_round = 2, label_color = "black")
 
 # We could also make multiple scatter plots to examine the 
 # different relationships in the data that we're interested in.
 # We'll explore some more of ggplot2's options here.
 
-___(data = ___, mapping = aes(x = ___, y = ___, ___ = ___)) +
-  ___(___ = ___, ___ = ___, ___ = ___) +
-  ___() +
-  ___(___ = "#0091ff", ___ = "#f0650e") +
-  ___(___ = "___", ___ = "springgreen3")
+ggplot(data = dat, mapping = aes(x = pos, y = scorumin, color = pos)) +
+  geom_point(shape = 16, size = 3, show = legend) +
+  theme_minimal() +
+  scale_color_gradient(low = "#0091ff", high =  "#f0650e") +
+  geom_smooth(method = "lm", color = "springgreen3")
 
-___(data = dat, mapping = aes(x = ___, y = ___, ___ = ___)) +
-  ___(shape = ___, size = ___, show.legend = ___) +
-  ___() +
-  ___(low = "darkslategray1", high = "darkviolet") +
-  ___(method = "lm", color = "deeppink")
+ggplot(data = dat, mapping = aes(x = anxious, y = scorumin, color = pos)) +
+  geom_point(shape = 21, size = 3, show.legend = T) +
+  theme_minimal() +
+  scale_color_gradient(low = "darkslategray1", high = "darkviolet") +
+  geom_smooth(method = "lm", color = "deeppink")
 
-___(data = dat, mapping = aes(x = ___, y = ___, ___ = ___)) +
-  ___(shape = ___, size = ___, show.legend = ___) +
-  ___() +
-  ___(low = "springgreen", high = "midnightblue") +
-  ___(method = "lm", color = "purple")
+ggplot(data = dat, mapping = aes(x = anxious, y = depcesd, color = anxious)) +
+  geom_point(shape = "*", size = 6, show.legend = T) +
+  theme_minimal() +
+  scale_color_gradient(low = "springgreen", high = "midnightblue") +
+  geom_smooth(method = "lm", color = "purple")
 
-___(data = dat, mapping = aes(x = ___, y = ___, color = ___)) +
-  ___(shape = ___, size = ___, show.legend = ___) +
-  ___() +
-  ___(low = "paleturquoise1", high = "palevioletred4") +
-  ___(method = "lm", color = "black")
+ggplot(data = dat, mapping = aes(x = depcesd, y = scorumin, color = depcesd)) +
+  geom_point(shape = 16, size = 3, show.legend = T) +
+  theme_void() +
+  scale_color_gradient(low = "paleturquoise1", high = "palevioletred4") +
+  geom_smooth(method = "lm", color = "black")
 
 ##############
 # The Models #
@@ -78,37 +80,37 @@ ___(data = dat, mapping = aes(x = ___, y = ___, color = ___)) +
 # We'll first start out with our simplest model:
 # co-rumination predicted by positive friendship quality
 
-___ <- ___(___ ~ ___, ___ = ___)
-___(___)
+ModelC <- lm(scorumin ~ pos, data = dat)
+summary(ModelC)
 
 # Next, we'll add anxiety as a predictor. Notice that we 
 # simply add it into the lm() model.
 
-___ <- ___(___ ~ ___ + ___, ___ = ___)
-___(___)
+ModelA <- lm(scorumin ~ pos + anxious, data = dat)
+summary(ModelA)
 
 # Finally, we'll add depression as our last predictor.
 
-___ <- ___(___ ~ ___ + ___ + ___, ___ = ___)
-___(___)
+ModelA2 <- lm(scorumin ~ pos + anxious + depcesd, data = dat)
+summary(ModelA2)
 
 ## Comparting the models ##
 
 # We'll start by comparing our simplest model to our
 # 2 predictor model.
 
-___(___,___)
+anova(ModelC,ModelA)
 
 # We can then get the ANOVA tables for each of the
 # individual models.
 
-___(___)
-___(___)
+Anova(ModelC)
+Anova(ModelA)
 
 # We can then compare our 2-predictor model with the 
 # full model.
 
-___(___,___)
+anova(ModelA,ModelA2)
 
 ###############
 # Diagnostics #
@@ -121,45 +123,45 @@ ___(___,___)
 # from last week's lesson.
 
 ## Leverage ##
-lev <- ___(___(___))
-___(lev)
+lev <- hat(model.matrix(ModelA))
+plot(lev)
 
-___(___)
+ols_plot_resid_lev(ModelA)
 
 ## Studentized Deleted Residuals ##
 
-___(___)
+ols_plot_resid_stud(ModelA)
 
 ## Cook's Distance ##
 
-___(___)
+ols_plot_cooksd_bar(ModelA)
 
 ## Normality Assumption ##
 
-___(ModelA$___)
-___(ModelA$___)
-___(ModelA$___)
+qqnorm(ModelA$res)
+qqline(ModelA$res)
+hist(ModelA$res)
 
 ## Homogeneity of Variance ##
 
-___(___)
+plot(ModelA)
 
 ## Redundancy, tolerance ##
 
 # We'll now take a look at some new functions
 # that deal with your Variance Inflation Factors.
 
-___(___)
-___(___)
+vif(ModelA2)
+ols_vif_tol(ModelA2)
 
-___(___)
-___(___)
+vif(ModelA)
+ols_vif_tol(ModelA)
 
 ## Model without Obs 338 ##
 
-dat2 <- ___[-___, ]
-ModelA_clean <- ___(___ ~ ___ + ___, data = ___)
-___(ModelA_clean)
+dat2 <- dat[-338, ]
+ModelA_clean <- lm(scorumin ~ pos + anxious, data = dat2)
+summary(ModelA_clean)
 
 # For a reminder...
 
