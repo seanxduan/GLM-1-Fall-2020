@@ -11,6 +11,7 @@ install.packages("apaTables")
 install.packages("devtools")
 devtools::install_github("crsh/papaja")
 install.packages("pwr")
+install.packages("olsrr")
 library(tidyverse)
 library(sjPlot)
 library(sjstats)
@@ -18,7 +19,7 @@ library(MBESS)
 library(apaTables)
 library(papaja)
 library(pwr)
-
+library(olsrr)
 
 # Data used:
 
@@ -36,25 +37,25 @@ dat <- read_csv(file = "https://raw.githubusercontent.com/RipleyKyleR/class_file
 # by this point. We're simply creating two simple regressions
 # and one multiple regression.
 
-m1 <- ___(___ ~ ___, data = ___)
-___(m1)
-___(m1)
-___(m1, ___ = 1)
-___(m1, ___ = 2)
+m1 <- lm(TIME ~ AGE, data = dat)
+summary(m1)
+anova_stats(m1)
+apa.reg.table(m1, table.number = 1)
+apa.aov.table(m1, table.number = 2)
 
-m2 <- ___(___ ~ ___, data = ___)
-___(m2)
-___(m2)
+m2 <- lm(TIME ~ MILES, data = dat)
+summary(m2)
+anova_stats(m2)
 
-m3 <- ___(___ ~ ___ + ___, data = ___)
-___(m3)
-___(m3)
+m3 <- lm(TIME ~ AGE + MILES, data = dat)
+summary(m3)
+anova_stats(m3)
 
-___(___, ___ = "___",
-    ___ = ___("___", "___"))
+plot_model(m3, type = "pred",
+    terms = c("MILES", "AGE"))
 
-___(___, ___ = "___",
-    ___ = ___("___", "___"))
+plot_model(m3, type = "pred",
+           terms = c("AGE", "MILES"))
 
 ######################
 # Interaction Models #
@@ -65,15 +66,15 @@ ___(___, ___ = "___",
 # interaction to our model, we can simply add the
 # two (or more) predictors multiplied by each other.
 
-m4 <- ___(___ ~ ___ + ___ + ___*___, data = ___)
-___(m4)
-___(m4)
+m4 <- lm(TIME ~ AGE + MILES + AGE*MILES, data = dat)
+summary(m4)
+anova_stats(m4)
 
-___(___, ___ = "___",
-    ___ = ___("___", "___"))
+plot_model(m4, type = "pred",
+    terms = c("MILES", "AGE"))
 
-___(___, ___ = "___",
-    ___ = ___("___", "___"))
+plot_model(m4, type = "pred",
+           terms = c("AGE", "MILES"))
 
 ####################
 # Nonlinear Models #
@@ -86,12 +87,14 @@ ___(___, ___ = "___",
 # include a higher power, you must include all lower powers as
 # well.
 
-m5 <- ___(___ ~ ___ + ___(___^___), data = ___)
-___(m5)
-___(m5)
+m5 <- lm(TIME ~ MILES + I(MILES^2), data = dat)
+summary(m5)
+anova_stats(m5)
 
-___(___, ___ = "___",
-    ___ = ___("___"))
+pwr.f2.test(u=2, v=77, f2=.5956/(1-.5956), sig.level = 0.05)
+
+plot_model(m5, type = "pred",
+    terms = c("MILES"))
 
 ###########
 ## Power ##
@@ -100,6 +103,27 @@ ___(___, ___ = "___",
 # Here we're going to try something a bit different.
 
 https://cran.r-project.org/web/packages/pwr/vignettes/pwr-vignette.html
+
+##############################
+## Collinearity Diagnostics ##
+##############################
+
+ols_vif_tol(m4)
+ols_vif_tol(m3)
+
+ols_vif_tol(m5)
+
+
+######################
+## Tables of Models ##
+######################
+
+tab_model(m1)
+tab_model(m2)
+tab_model(m3)
+tab_model(m4)
+
+
 
 ############################################
 ## Writing More Complex Model Expressions ##
@@ -116,6 +140,8 @@ https://cran.r-project.org/web/packages/pwr/vignettes/pwr-vignette.html
 
 # Yi = β0 + β1Xi + β2Zi + β3Wi + β4XiZi + β5XiWi + β6ZiWi + β7XiZiWi + εi
 # This model can be written as any of the following:
-lm(___) 
-lm(___)
-lm(___)
+lm(Y~X + Z + W + X:Z + X:W + Z:W + X:Z:W) 
+lm(Y~X*Z*W)
+lm(Y~ (X+Z+W)^3)
+#Yi = β0 + β1Xi + β2Zi + β3Wi + β4XiZi + β5XiWi + β6ZiWi + ei
+lm(Y~ (X+Z+W)^2)
