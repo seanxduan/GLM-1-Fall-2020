@@ -38,7 +38,7 @@ mtcars <- mtcars
 # in ggplot2, as well as common arguments used in the ggplot2 
 # functions.
 
-
+#https://ggplot2-book.org/introduction.html#welcome-to-ggplot2
 #######################################
 ## The Elements of Graphical Grammar ##
 #######################################
@@ -112,7 +112,7 @@ mpg_wt + geom_point()
 
 ggplot(data = mtcars, mapping = aes(x = wt, y = mpg)) + 
   geom_point() + 
-  geom_smooth(method = lm, se = FALSE)
+  geom_smooth(method = lm, se = TRUE)
 
 # Here, we've added in the smooth geometry which adds a regression
 # line to our graph. We've specified that we want the "method" to be
@@ -151,7 +151,7 @@ ggplot(data = mtcars, mapping = aes(x = wt, y = mpg, color = factor(cyl),
                                     shape = factor(vs), size = hp)) + 
   geom_point() + 
   geom_smooth(method = lm, se = FALSE)
-
+?mtcars
 # Notice that different groups (e.g., 6 cylinder with v-shaped and 6 
 # cylinder straight) have their own regression lines.
 
