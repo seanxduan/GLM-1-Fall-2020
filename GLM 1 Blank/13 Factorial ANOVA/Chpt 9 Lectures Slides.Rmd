@@ -1,0 +1,276 @@
+---
+title: "Chapter 9 Lectures Slides"
+author: "Victoria Shaffer"
+date: "10/18/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Using data set from the primary text: ex9.1
+```{r}
+ex9.1 <- read.csv("~/Dropbox/PSYCH 8710 GLM I/Datasets/ex9.1.txt", sep="")
+```
+
+## Constructing Helmert codes
+
+```{r}
+
+## One method is to create separate variables for each contrast coded predictor
+
+ex9.1$Lambda1 <- c(rep(5,3),rep(-1,15))
+ex9.1$Lambda2 <- c(rep(0,3), rep(4,3), rep(-1,12))
+ex9.1$Lambda3 <- c(rep(0,6), rep(3,3), rep(-1,9))
+ex9.1$Lambda4 <- c(rep(0,9), rep(2,3), rep(-1,6))
+ex9.1$Lambda5 <- c(rep(0,12), rep(1,3), rep(-1,3))
+
+
+## Second method is to construct separate Helmert coded factors for Drug and Psychotherapy
+ex9.1$Drug.fH <-factor(ex9.1$Drug)
+ex9.1$Psychotherapy.fH <- factor(ex9.1$Psychotherapy)
+
+contrasts(ex9.1$Drug.fH) <- contr.helmert(3)
+contrasts(ex9.1$Psychotherapy.fH) <- contr.helmert(2)  
+```
+
+## Testing the omnibus hypothesis that all 6 group means are equal
+
+```{r}
+ModelA <- lm(Mood~Lambda1+Lambda2+Lambda3+Lambda4+Lambda5, data = ex9.1)
+summary(ModelA)
+anova(ModelA)
+library(lsr)
+etaSquared(ModelA, anova=FALSE)
+
+ModelA2 <- lm(Mood ~ Drug.fH*Psychotherapy.fH, data = ex9.1)
+summary(ModelA2)
+
+print(attributes(ex9.1$Drug.fH))
+print(attributes(ex9.1$Psychotherapy.fH))
+
+#The output from these two sets of analyses will be different because the contrast codes are testing different hypotheses, even though both are constructed via the Helmert coding mechansim.
+```
+
+## Testing the significance of /beta_1 
+## 
+
+```{r}
+ModelC <- lm(Mood~Lambda2+Lambda3+Lambda4+Lambda5, data = ex9.1)
+summary(ModelC)
+anova(ModelC)
+```
+
+## Group Means
+
+```{r}
+## grand mean
+mean(ex9.1$Mood)
+
+## mean for Group 1
+e1subset <- subset(ex9.1, Lambda1 == 5, select=Mood)
+mean(e1subset$Mood)
+## mean for Groups 2-6
+e2subset <- subset(ex9.1, Lambda1 == -1, select = Mood)
+mean(e2subset$Mood)
+## difference between the two
+32-17.6
+```
+## 
+##
+## Factorial contrast codes
+```{r}
+
+## One method is to create separate variables for each contrast coded predictor
+ex9.1$X1 <- c(rep(1,6),rep(-2,3), rep(1,6),rep(-2,3))
+ex9.1$X2 <- c(rep(1,3), rep(-1,3),rep(0,3),rep(1,3),rep(-1,3),rep(0,3))
+ex9.1$X3 <- c(rep(1,9), rep(-1,9))
+ex9.1$X4 <- c(rep(1,6),rep(-2,3),rep(-1,6),rep(2,3))
+ex9.1$X5 <- c(rep(1,3),rep(-1,3),rep(0,3),rep(-1,3),rep(1,3),rep(0,3))
+
+## Second method is to construct separate factors for mood and stop rule
+ex9.1$Drug.f <-factor(ex9.1$Drug)
+ex9.1$Psychotherapy.f <- factor(ex9.1$Psychotherapy)
+
+contrasts(ex9.1$Drug.f) <- cbind(c(1, 1, -2), c(1, -1, 0))
+contrasts(ex9.1$Psychotherapy.f) <- cbind(c(1,-1))
+```
+
+## Analyses with factorial contrast codes
+```{r}
+ModelA2 <- lm(Mood~ X1+X2+X3+X4+X5, data=ex9.1)
+summary(ModelA2)
+anova(ModelA2)
+
+ModelA2a <- lm(Mood ~ Drug.f*Psychotherapy.f, data = ex9.1)
+summary(ModelA2a)
+
+#Both of these methods should yield identical results
+```
+
+## Testing the effect of Drug vs. Placebo
+```{r}
+ModelC2 <- lm(Mood~ X2+X3+X4+X5, data=ex9.1)
+summary(ModelC2)
+anova(ModelC2)
+```
+
+## Group Means
+
+```{r}
+## constuct Group variable
+ex9.1$Group <- c(rep(1,3),rep(2,3),rep(3,3),rep(4,3),rep(5,3),rep(6,3))
+
+## mean for Group 1
+e1subset <- subset(ex9.1, Group == 1, select=Mood)
+mean(e1subset$Mood)
+## mean for Group 2
+e2subset <- subset(ex9.1, Group == 2, select = Mood)
+mean(e2subset$Mood)
+## mean for Group 3
+e3subset <- subset(ex9.1, Group == 3, select = Mood)
+mean(e3subset$Mood)
+## mean for Group 4
+e4subset <- subset(ex9.1, Group == 4, select = Mood)
+mean(e4subset$Mood)
+## mean for Group 5
+e5subset <- subset(ex9.1, Group == 5, select = Mood)
+mean(e5subset$Mood)
+## mean for Group 6
+e6subset <- subset(ex9.1, Group == 6, select = Mood)
+mean(e6subset$Mood)
+
+## mean for Therapy vs. No Therapy
+e7subset <- subset(ex9.1, Group == 1 | Group==2| Group== 3, select = Mood)
+mean(e7subset$Mood)
+e8subset <- subset(ex9.1, Group == 4 | Group==5| Group== 6, select = Mood)
+mean(e8subset$Mood)
+
+## mean for Drug A, Drug B, and Placebo 
+e9subset <- subset(ex9.1, Group == 1 | Group==4, select = Mood)
+mean(e9subset$Mood)
+e10subset <- subset(ex9.1, Group ==2 | Group==5, select = Mood)
+mean(e10subset$Mood)
+e11subset <- subset(ex9.1, Group==3| Group== 6, select = Mood)
+mean(e11subset$Mood)
+```
+## Figures
+
+```{r}
+library(ggplot2)
+bar <- ggplot(ex9.1, aes(Drug, Mood, fill=Psychotherapy))
+bar + stat_summary(fun.y = mean, geom = "bar", position="dodge") + stat_summary(fun.data= mean_cl_normal, geom = "errorbar", position = position_dodge(width = 0.90), width=0.2) + labs (x = "Factor 1", fill = "Factor 2")
+ggsave("~/Dropbox/PSYCH 8710 GLM I/R files/Chpt 9/Chpt9 Factorial Anova.png")
+
+bar2 <- ggplot(ex9.1, aes(Psychotherapy, Mood, fill=Drug))
+bar2 + stat_summary(fun.y = mean, geom = "bar", position="dodge") + stat_summary(fun.data= mean_cl_normal, geom = "errorbar", position = position_dodge(width = 0.90), width=0.2) + labs (x = "Factor 2", fill = "Factor 1")
+ggsave("~/Dropbox/PSYCH 8710 GLM I/R Files/Chpt 9/Chpt9 Factorial Anova2.png")
+
+barDrug <-ggplot(ex9.1, aes(Drug, Mood))
+barDrug + stat_summary(fun.y=mean, geom = "bar", fill="White", color = "Black") + stat_summary(fun.data = mean_cl_normal, geom = "pointrange") + labs (x = "Factor 1")
+ggsave("~/Dropbox/PSYCH 8710 GLM I/R Files/Chpt 9/Chpt9 Drug ME.png")
+
+barTherapy <-ggplot(ex9.1, aes(Psychotherapy, Mood))
+barTherapy + stat_summary(fun.y=mean, geom = "bar", fill="White", color = "Black") + stat_summary(fun.data = mean_cl_normal, geom = "pointrange") + labs (x = "Factor 2")
+ggsave("~/Dropbox/PSYCH 8710 GLM I/R Files/Chpt 9/Chpt9 Therapy ME.png")
+
+##line <- ggplot(ex9.1, aes(Drug, Mood, color=Psychotherapy))
+##line + stat_summary(fun.y = mean, geom = "point") +stat_summary(fun.y = mean, geom = "line", aes(group=Psychotherapy) + stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2))
+
+
+```
+
+## Second example for class
+```{r}
+fugazi <- read.delim("~/Dropbox/PSYCH 8710 GLM I/Datasets/Field text/fugazi.dat")
+fugazi$X1 <-c (rep(1,45),rep(-1,45))
+fugazi$X2 <-c (rep(-1,15),rep(2,15),rep(-1,30),rep(2,15),rep(-1,15))
+fugazi$X3 <-c (rep(1,15),rep(0,15),rep(-1,15),rep(1,15),rep(0,15),rep(-1,15))
+fugazi$X4 <-c (rep(-1,15),rep(2,15),rep(-1,15),rep(1,15), rep(-2,15),rep(1,15))
+fugazi$X5 <-c (rep(1,15),rep(0,15),rep(-1,15),rep(-1,15),rep(0,15),rep(1,15))
+
+## recoding into catagorical variables
+fugazi$age <- ifelse(fugazi$age==1, "Younger", ifelse(fugazi$age==2, "Older", NA))
+fugazi$music <- ifelse(fugazi$music==1, "Country", ifelse(fugazi$music==2, "Pop", ifelse(fugazi$music==3, "Punk", NA)))
+```
+
+## Testing the factorial model
+
+```{r}
+ModelA <- lm(liking~ X1+X2+X3+X4+X5, data = fugazi)
+summary(ModelA)
+
+```
+## Group variables
+```{r}
+##constuct Group variable
+fugazi$Group <- c(rep(1,15),rep(2,15),rep(3,15),rep(4,15),rep(5,15),rep(6,15))
+
+```
+## Making figures
+```{r}
+library(ggplot2)
+barMusic <-ggplot(fugazi, aes(music, liking))
+barMusic + stat_summary(fun.y=mean, geom = "bar", fill="White", color = "Black") + stat_summary(fun.data = mean_cl_normal, geom = "pointrange") + labs (x = "Music Type")
+ggsave("~/Dropbox/PSYCH 8710 GLM I/R Files/Chpt 9/Chpt9 Music ME.png")
+
+barAge <- ggplot(fugazi, aes(age, liking))
+barAge + stat_summary(fun.y = mean, geom = "bar", position = "dodge", fill="White", color="Black") +stat_summary(fun.data = mean_cl_normal, geom = "errorbar", position = position_dodge(width = 0.90), width=0.2) + labs(x="Age", y="Liking")
+ggsave("~/Dropbox/PSYCH 8710 GLM I/R Files/Chpt 9/Chpt9 Age ME.png")
+
+
+line <-ggplot(fugazi, aes(music,liking, color=age))
+line + stat_summary(fun.y = mean, geom = "point") + stat_summary(fun.y = mean,geom = "line", aes(group=age)) + stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width=0.2) + labs(x="Music Type", y="Liking Score")
+ggsave("~/Dropbox/PSYCH 8710 GLM I/R Files/Chpt 9/Chpt9 MusicXAge.png")
+
+line2 <- ggplot(fugazi, aes(age,liking, color=music))
+line2 + stat_summary(fun.y = mean, geom = "point") + stat_summary(fun.y = mean, geom = "line", aes(group=music)) + stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width=0.2)
+ggsave("~/Dropbox/PSYCH 8710 GLM I/R Files/Chpt 9/Chpt9 MusicXAge2.png")
+
+barInt <- ggplot(fugazi, aes(music,liking,fill=age))
+barInt + stat_summary(fun.y = mean, geom = "bar", position = "dodge") + stat_summary(fun.data = mean_cl_normal, geom = "errorbar", position=position_dodge(width = 0.90), width=0.2) + labs(x="Music Genre", y="Liking Score")
+ggsave("~/Dropbox/PSYCH 8710 GLM I/R Files/Chpt 9/Chpt9 MusicXAge BAR.png")
+
+barInt2 <- ggplot(fugazi, aes(age, liking, fill=music))
+barInt2 + stat_summary(fun.y = mean, geom = "bar", position = "dodge") + stat_summary(fun.data = mean_cl_normal, geom = "errorbar", position=position_dodge(width = 0.90), width=0.2) + labs(x="Age", y="Liking Score")
+ggsave("~/Dropbox/PSYCH 8710 GLM I/R Files/Chpt 9/Chpt9 MusicXAge BAR2.png")
+
+
+```
+
+## Group Means
+```{r}
+##mean for young vs. old
+e1subset <- subset(fugazi, Group == 1 | Group==2| Group== 3, select = liking)
+mean(e1subset$liking)
+e2subset <- subset(fugazi, Group == 4 | Group==5| Group== 6, select = liking)
+mean(e2subset$liking)
+
+## mean for Group 1
+e1subset <- subset(fugazi, Group == 1, select=liking)
+mean(e1subset$liking)
+## mean for Group 2
+e2subset <- subset(fugazi, Group == 2, select = liking)
+mean(e2subset$liking)
+## mean for Group 3
+e3subset <- subset(fugazi, Group == 3, select = liking)
+mean(e3subset$liking)
+## mean for Group 4
+e4subset <- subset(fugazi, Group == 4, select = liking)
+mean(e4subset$liking)
+## mean for Group 5
+e5subset <- subset(fugazi, Group == 5, select = liking)
+mean(e5subset$liking)
+## mean for Group 6
+e6subset <- subset(fugazi, Group == 6, select = liking)
+mean(e6subset$liking)
+
+## mean for Music Genre
+Countrysubset <- subset(fugazi, Group == 1 | Group==4, select = liking)
+mean(Countrysubset$liking)
+PopSubset <- subset(fugazi, Group ==2 | Group==5, select = liking)
+mean(PopSubset$liking)
+PunkSubset <- subset(fugazi, Group==3| Group== 6, select = liking)
+mean(PunkSubset$liking)
+```
