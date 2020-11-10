@@ -1,0 +1,77 @@
+---
+title: 'Homework Assignment #10'
+author: "GLM I"
+date: "DUE: 11/20/2020"
+output: pdf_document
+---
+# Instructions
+
+The data for this assignment can be found on Canvas. Use R Markdown to create an answer sheet for this assignment. You can choose any output format you like. Make sure to show your code for each item as appropriate and the value of any stastistics requested. Execute all analyses using R commands.
+
+## TutorMarks data file
+For the first 2 items, please use the TutorMarks.dat file on Canvas. This data set was designed to examine the consistency among different TAs grading written assignments. In this data, students submitted 8 written assignments to be graded by each of the 4 TAs (referred to as 'tutor' in this data set). In other words, every TA graded every assignment. The hypothesis to be tested is that grades provided are not consistent across TAs, or grades on the same assignment differ significantly by TA. 
+
+##
+1. Test this hypothesis. Describe your conclusions. (8 points)
+
+```{r echo=TRUE}
+##Reshape data from wide format to tall format
+TutorMarks <- read.delim("~/Dropbox/PSYCH 8710 GLM I/Datasets/Field text/TutorMarks.dat")
+library(reshape2)
+library(stats)
+library(nlme)
+library(car)
+
+HW10a <- melt(TutorMarks, id = c("Essay"), measured = c("tutor1", "tutor2", "tutor3","tutor4"))
+
+##Construct factors for tutor and essay
+HW10a$Essay.f <- factor(HW10a$Essay)
+HW10a$Tutor.f <- factor(HW10a$variable)
+contrasts(HW10a$Tutor.f) <- contr.Helmert(4)
+print(attributes(HW10a$Tutor.f))
+
+##Analyze data using lme function
+ModelA <- lme(value~ Tutor.f, random=~1|Essay.f/Tutor.f, data = HW10a, method = "ML")
+summary(ModelA)
+
+```
+
+2. Create a bar graph showing the relationship between TA and grade. (2 points)
+
+```{r include=FALSE}
+library(ggplot2)
+bar <- ggplot (HW10a, aes(Tutor.f, value))
+bar + stat_summary(fun.y = mean, geom="bar", fill = "White", color = "Black") + 
+  stat_summary(fun.data = mean_cl_normal, geom = "pointrange") + 
+  labs(x="Teaching Assistant", y="Mean Grade") + 
+  scale_fill_manual(labels=c("TA 1", "TA 2", "TA 3", "TA 4"))
+```
+
+## Hill et al., 2007 data file
+For the last two items, please use the Hilletal.2007.dat file on Canvas. The goal of this research was to examine whether designing interventions based on the Theory of Planned Behavior increases children's exercise behavior. There were four interventions in this study: 1) Control group; 2) Leaflet (describing the benefits of exercise); 3) Leaflet plus a quiz on the information covered in the leaflet; 4) Leaflet plus an exercise plan. 503 children nested within 22 classrooms participated in this study. Classrooms were randomly assigned to one of the four interventions. At the end of the intervention, the children were asked to answer the following question, "On average over the last 3 weeks, I have exercised energentically for at least 30 minutes ______ times per week". This response is recorded as 'Post_Exercise' in the data file. 
+
+##
+3. Examine the effect of intervention type on children's exercise behvaior (using Post_Exercise as the outcome). Describe your conclusions. (8 points)
+
+```{r echo=TRUE}
+HW10b <- read.delim("~/Dropbox/PSYCH 8710 GLM I/Datasets/Field text/Hill et al. (2007).dat")
+
+##Construct factors for Classroom and Intervention
+HW10b$Intervention.f <- factor(HW10b$Intervention)
+contrasts(HW10b$Intervention.f) <- contr.Helmert(4)
+HW10b$Classroom.f <- factor(HW10b$Classroom)
+print(attributes(HW10b$Intervention.f))
+
+## Analyze the effect of intervention
+ModelA2 <- lme(Post_Exercise~ Intervention.f, random= list(~1|Classroom.f, ~1|Intervention.f), data = HW10b, 
+               method = "ML")
+summary(ModelA2)
+anova(ModelA2)
+```
+
+4. Construct a table summarizing your model using R. (2 points)
+```{r echo=TRUE}
+library(sjPlot)
+tab_model(ModelA2)
+```
+
