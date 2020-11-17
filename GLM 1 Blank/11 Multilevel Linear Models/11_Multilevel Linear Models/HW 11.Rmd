@@ -1,0 +1,124 @@
+---
+title: 'Homework Assignment #11'
+author: "General Linearl Models I"
+date: "DUE: 12/04/2020"
+output: pdf_document
+---
+## Data for this assignment
+ 
+Shaffer, V. A., Scherer, L. D., Focella, E. S., Hinnant, A., Len-Rios, M. E., Zikmund-Fisher, B. J. (2017). What is the story with narratives? How using personal narratives in journalism changes health behavior. Health Communication, doi: http://dx.doi.org/10.1080/10410236.2017.1333562 
+
+
+We are going to revisit this data set now that we know the basics of multilevel modeling. As you may remember, this study was designed to examine the effect of a health news story about a person who developed a life-threatening illness (Stevens-Johnson Syndrome, SJS) after using Advil on subsequent Advil use (or other medication with ibuprofen as its active ingredient). We assessed likelihood of ibuprofen use at baseline (Time 1), immediately after reading the health news story (Time 2), and two weeks later (Time 3). We also had a brief intervention that was designed to reduce the influence of the health news story. Participants were randomly assigned to either the Control condition or the Base Rate Intervention condition. Participants in the base rate intervention condition were given detailed information about the prevalence of SJS in the population.
+
+The data file can be found in a .csv file on Canvas. The file contains data on 7 variables from 397 participants. Below are the definitions of these measures. Note the data file contains missing data labeled ‘NA’.
+
+# Items in the data file
+* Condition ('0' = Control, '1' = Base Rate Intervention)
+* Likelihood_BASELINE-‘How likely are you to use Advil (or other medication with ibuprofen as the active ingredient) in the future?’ 1-5 point Likert scale; assessed BEFORE the health news story was read. 
+* Likelihood_TIME1—‘How likely are you to use Advil (or other medication with ibuprofen as the active ingredient) in the future?’Assessed immediately after reading the health news story; same scale as above. 
+*	Likelihood_TIME2—‘How likely are you to use Advil (or other medication with ibuprofen as the active ingredient) in the future?’ Assessed at two week follow up; same scale as above
+* Subjective Risk Perception: 'How likely do you think it is that you would develop Stevens-Johnson Syndrome after taking Advil (or other medications with ibuprofen as an active ingredient)?' 0-4 Likert scale
+* Severity: 'If you were to develop Stevens-Johnson Syndrome, how severe do you think your reaction would be?' 0-4 Likert scale
+* Worry: ' Although the article stated that Steven-Johnson Syndrome is quite rare, how much do you think you would worry about developing SJS if you took Advil?' 0-4 Likert scale
+
+```{r eval=FALSE, include=FALSE}
+HW11 <- read.csv("~/Dropbox/PSYCH 8710 GLM I/Datasets/Psych Faculty datasets/Shaffer Lab/Shaffer et al 2018_HW11.csv")
+```
+
+## Homework Questions
+
+1. Import the datafile and create tall data set (2 points).
+```{r eval=FALSE, include=FALSE}
+library(tidyverse)
+HW11_tall <- HW11 %>% 
+  gather(key = time, value = likelihood, Likelihood_BASELINE, Likelihood_TIME1, 
+         Likelihood_TIME2, na.rm = TRUE)
+
+HW11_tall$time <- factor(HW11_tall$time, 
+                     labels = c(Likelihood_BASELINE = "Time 1", 
+                                      Likelihood_TIME1 ="Time 2",
+                                      Likelihood_TIME2 = "Time 3"))
+
+print(attributes(HW11_tall$time))
+
+HW11_tall$Condition <- factor(HW11_tall$Condition,
+                              labels = c("0" = "Control", "1" = "Intervention"))
+
+print(attributes(HW11_tall$Condition))
+```
+
+
+2. Construct a boxplot of the data (2 points).
+```{r eval=FALSE, include=FALSE}
+library(ggplot2)
+ggplot(data = HW11_tall, mapping =  aes(x = time, y = likelihood)) + 
+  geom_boxplot() +  labs(x = "Time", 
+         y = "Likelihood of Using Ibuprofen in the Future")
+
+ggplot(data = HW11_tall, mapping = aes(x = time, 
+                                        y = likelihood, color = Condition)) + 
+  geom_boxplot() + labs(x = "Time", y = "Likelihood of Ibuprofen Use") 
+```
+
+3. Create contrast coded predictors for time and intervention (2 points).
+```{r eval=FALSE, include=FALSE}
+library(car)
+Time1_v_others <- c(2, -1, -1)
+Time2_v_Time3 <- c(0, 1, -1)
+contrasts(HW11_tall$time) <- cbind(Time1_v_others, Time2_v_Time3)
+contrasts(HW11_tall$Condition) <- contr.Helmert(2)
+print(attributes(HW11_tall$time))
+print(attributes(HW11_tall$Condition))
+```
+
+
+4. Construct your best fitting multilevel model of the data. We will do this in steps. Start by creating a baseline model with only a fixed intercept (2 points).
+```{r eval=FALSE, include=FALSE}
+library(nlme)
+Baseline <- gls(likelihood ~ 1, data = HW11_tall, method = "ML")
+summary(Baseline)
+```
+
+5. Construct a model where you allow intercepts to vary and compare the fit of this model with you baseline model. What would you conclude? (2 points)
+```{r eval=FALSE, include=FALSE}
+ModelA1 <- lme(likelihood ~ 1, random = ~1|Participant, data = HW11_tall, method = "ML")
+summary(ModelA1)
+anova(Baseline, ModelA1)
+```
+
+6. Construct a model with a fixed effect of time. Compare the fit of this model with your prior model. What would you conclude? (2 points)
+```{r eval=FALSE, include=FALSE}
+ModelA2 <- lme(likelihood ~ time, random = ~1|Participant, data = HW11_tall, method = "ML")
+summary(ModelA2)
+anova(ModelA1, ModelA2)
+```
+
+7. Construct a model where the slopes for time are allowed to vary. Compare the fit of this model with your prior model. What would you conclude? (2 points)
+```{r eval=FALSE, include=FALSE}
+ModelA3 <- lme(likelihood ~ time, random = ~time|Participant, data = HW11_tall,
+               method = "ML")
+summary(ModelA3)
+anova(ModelA2, ModelA3)
+```
+
+8. Finally, construct a model testing the effect of experimental condition. Compare the fit of this model with your prior model. What would you conclude? (2 points)
+```{r eval=FALSE, include=FALSE}
+ModelA4 <- lme(likelihood ~ time + Condition + time*Condition, random = ~time|Participant, data = HW11_tall, method = "ML")
+summary(ModelA4)
+anova(ModelA3, ModelA4)
+```
+
+9. Interpret your best fitting model (i.e. tell me what you have learned) (2 points).
+
+10. Create a plot depicting the time x condition interaction (2 points).
+```{r eval=FALSE, include=FALSE}
+ggplot(data = HW11_tall, mapping = aes(x = time, y = likelihood, color = Condition)) + stat_summary(fun.y = mean, geom = "point") + 
+  stat_summary(fun.y = mean, geom = "line", aes(group= Condition)) +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  labs(x = "Time", y = "Likelihood of Ibuprofen Use", color = "Experimental Condition") + 
+  scale_y_continuous(limits = c(1,5)) 
+```
+
+
+

@@ -20,6 +20,27 @@ library(nlme)
 cos_surg <- read_tsv("https://raw.githubusercontent.com/RipleyKyleR/class_files/master/Cosmetic%20Surgery.dat")
 honeymoon <- read_tsv("https://raw.githubusercontent.com/RipleyKyleR/class_files/master/Honeymoon%20Period.dat")
 
+#################
+# wide and tall #
+#################
+country_wide <- data.frame(
+  country = c("Sweden", "Denmark", "Norway"),
+  avgtemp.1994 = country_long$avgtemp[1:3],
+  avgtemp.1995 = country_long$avgtemp[4:6],
+  avgtemp.1996 = country_long$avgtemp[7:9])
+country_wide 
+
+
+country_tall <- country_wide %>% 
+  gather(key = year, value = avgtemp, avgtemp.1994, avgtemp.1995, avgtemp.1996, 
+         na.rm = TRUE)
+
+country_tall
+
+country_broad <- country_tall %>% 
+  spread(key = year, value = avgtemp)
+
+country_broad
 #####################################
 # If ANOVA was the only tool we had #
 #####################################
@@ -28,8 +49,8 @@ honeymoon <- read_tsv("https://raw.githubusercontent.com/RipleyKyleR/class_files
 # if there are differences in post quality of life depending
 # on the type of surgery.
 
-surg_aov <- ___(___ ~ ___, data = ___)
-summary(___)
+surg_aov <- aov(Post_QoL ~ Surgery, data = cos_surg)
+summary(surg_aov)
 
 # Are there?
 
@@ -40,8 +61,8 @@ summary(___)
 # We could also attempt to answer this question
 # with our old friend `lm()`.
 
-surg_lm <- ___(___ ~ ___, data = ___)
-summary(___)
+surg_lm <- lm(Post_QoL ~ Surgery, data = cos_surg)
+summary(surg_lm)
 
 # As expected, we get the same answer.
 
@@ -53,17 +74,17 @@ summary(___)
 # include the pre-test Quality of Life as a 
 # covariate for our simpler model.
 
-surg_anc <- ___(___ ~ ___ + ___, data = ___)
-summary(___)
-Anova(___, ___ = "___")
+surg_anc <- aov(Post_QoL ~ Surgery + Base_QoL, data = cos_surg)
+summary(surg_anc)
+Anova(surg_anc, type = "III")
 
 ###############
 # Or as a GLM #
 ###############
 
-surg_anc2 <- ___(___ ~ ___ + ___, data = ___)
-summary(___)
-Anova(___, ___ = "___")
+surg_anc2 <- lm(Post_QoL ~ Surgery + Base_QoL, data = cos_surg)
+summary(surg_anc2)
+Anova(surg_anc2, type = "III")
 
 ####################################################
 ## How can we tell if we need a Multilevel Model? ##
@@ -76,19 +97,19 @@ Anova(___, ___ = "___")
 # First, you can start with a baseline model that only
 # contains the intercept. (Again, this is represented by a 1).
 
-x_baseline_surg <-___(___ ~ ___, 
-                     data = ___)
-summary(___)
+x_baseline_surg <-lm(Post_QoL ~ 1, 
+                     data = cos_surg)
+summary(x_baseline_surg)
 
 # We can get our correct answer with `lm()`, but we'll run
 # into some issues with model comparisons later, so let's
 # use a different function.
 
-baseline_surg <- ___(___ ~ ___,
-                     data = ___,
-                     ___ = "___")
+baseline_surg <- gls(Post_QoL ~ 1,
+                     data = cos_surg,
+                     method = "ML")
 
-summary(___)
+summary(baseline_surg)
 
 #######################
 # Let intercepts vary #
@@ -97,15 +118,15 @@ summary(___)
 # Here, we're going to let the intercepts vary
 # by clinic (as can be seen in the`random =` term).
 
-m1_surg <-___(___ ~ ___, data = ___,
-              ___ = ~___|___, ___ = "___")
-summary(___)
+m1_surg <-lme(Post_QoL ~ 1, data = cos_surg,
+              random = ~1|Clinic, method = "ML")
+summary(m1_surg)
 
 #####################
 # Model Comparisons #
 #####################
 
-___(___, ___)
+anova(baseline_surg, m1_surg)
 
 # Based on these comparisons, we can see that intercepts
 # vary significantly based off of the clinics. That's a 
@@ -121,21 +142,23 @@ ___(___, ___)
 # let's go ahead and add those main effects back into our
 # model.
 
-m2_surg <-___(___ ~ ___, 
-              data = ___, 
-              random = ~___|___, ___ = "___")
-summary(___)
+m2_surg <-lme(Post_QoL ~ Surgery, 
+              data = cos_surg, 
+              random = ~1|Clinic, method = "ML")
+summary(m2_surg)
 
-m3_surg <-___(___ ~ ___ + ___, 
-              data = ___, 
-              ___ = ~___|___, ___ = "___")
-summary(___)
+m3_surg <-lme(Post_QoL ~ Surgery + Base_QoL, 
+              data = cos_surg, 
+              random = ~1|Clinic, method = "ML")
+summary(m3_surg)
+
+anova(m2_surg, m3_surg)
 
 ##########################
 # More Model Comparisons #
 ##########################
 
-anova(___, ___, ___)
+anova(m1_surg, m2_surg, m3_surg)
 
 # So it looks like having our random intercepts and
 # the fixed effects for both predictors is our best model
@@ -151,11 +174,11 @@ anova(___, ___, ___)
 # So far our slopes have not been allowed to vary, but 
 # we'll change that now.
 
-m4_surg <- ___(___ ~ ___ + ___, 
-               data = ___, 
-               random = ~ ___|___,
-               method = "___") 
-summary(___)
+m4_surg <- lme(Post_QoL ~ Surgery + Base_QoL, 
+               data = cos_surg, 
+               random = ~ Surgery|Clinic,
+               method = "ML") 
+summary(m4_surg)
 
 # In this code, we've replaced `random = ~1|Clinic` with
 # `random = ~Surgery|Clinic`. This means that we want the 
@@ -167,7 +190,7 @@ summary(___)
 # More Model Comparisons #
 ##########################
 
-anova(___, ___)
+anova(m3_surg, m4_surg)
 
 # Our model with random intercepts and slopes seems to be superior.
 
@@ -177,18 +200,18 @@ anova(___, ___)
 
 # We'll now finish adding the rest of our predictors.
 
-m5_surg <- ___(___, .~. + ___) 
-summary(___)
+m5_surg <- update(m4_surg, .~. + Reason) 
+summary(m5_surg)
 
-m6_surg <- ___(___, .~. + ___:___)
-summary(___)
+m6_surg <- update(m5_surg, .~. + Reason:Surgery)
+summary(m6_surg)
 
 
 ###############################
 # Even More Model Comparisons #
 ###############################
 
-anova(___, ___, ___)
+anova(m4_surg, m5_surg, m6_surg)
 
 ####################
 # Further Analyses #
@@ -201,24 +224,24 @@ anova(___, ___, ___)
 
 # But first, we need to specify our subsets of reason.
 
-phys_sub <- ___$___ == 1
-cosm_sub <- ___$___ == 0
+phys_sub <- cos_surg$Reason == 1
+cosm_sub <- cos_surg$Reason == 0
 
 # Now we can run our model for physical reasons.
 
-phys_m <- ___(___ ~ ___ + ___, 
-              data = ___, 
-              ___ = ~ ___|___, 
-              ___ = ___, ___ = "___")
-summary(___)
+phys_m <- lme(Post_QoL ~ Surgery + Base_QoL, 
+              data = cos_surg, 
+              random = ~ Surgery|Clinic, 
+              subset = phys_sub, method = "ML")
+summary(phys_m)
 
 # And our model for cosmetic reasons.
 
-cosm_m <- ___(___ ~ ___ + ___, 
-              data = ___, 
-              ___ = ~ ___|___, 
-              ___ = ___, ___ = "___")
-summary(___)
+cosm_m <- lme(Post_QoL ~ Surgery + Base_QoL, 
+              data = cos_surg, 
+              random = ~ Surgery|Clinic, 
+              subset = cosm_sub, method = "ML")
+summary(cosm_m)
 
 ###################
 ## Growth Models ##
@@ -226,35 +249,35 @@ summary(___)
 
 # Make that data tall!
 
-hm_tall <- ___ %>% 
-  ___(___ = ___, ___ = ___, ___:___, ___ = ___)
-hm_tall <- ___[___(___$___),]
+hm_tall <- honeymoon %>% 
+  gather(key = time, value = satisfaction, Satisfaction_Base:Satisfaction_18_Months, na.rm = T)
+hm_tall <- hm_tall[order(hm_tall$Person),]
 
-hm_tall$___ <- ___(___,
-                      ___(___ == "___", ___,
-                             ___(___ == "___", ___,
-                                    ___(___ == "___", ___, 
-                                           ___(___ == "___", ___, ___)))))
+hm_tall$time_num <- with(hm_tall,
+                      ifelse(time == "Satisfaction_Base", 0,
+                             ifelse(time == "Satisfaction_6_Months", 1,
+                                    ifelse(time == "Satisfaction_12_Months", 2, 
+                                           ifelse(time == "Satisfaction_18_Months", 3, NA)))))
 
 ##################
 # Baseline Model #
 ##################
 
-baseline_hm <- ___(___ ~ ___, 
-                   data = ___, ___ = "___", 
-                   ___ = ___)
-summary(___)
+baseline_hm <- gls(satisfaction ~ 1, 
+                   data = hm_tall, method = "ML", 
+                   na.action = na.exclude)
+summary(baseline_hm)
 
 ###################
 # Vary Intercepts #
 ###################
 
-m1_hm <- ___(___ ~ ___, 
-             data = ___, 
-             ___ = ~ ___|___, ___ = "___",
-             ___ = ___, 
-             ___ = ___(___ = "___"))
-summary(___)
+m1_hm <- lme(satisfaction ~ 1, 
+             data = hm_tall, 
+             random = ~ 1|Person, method = "ML",
+             na.action = na.exclude, 
+             control = list(opt = "optim"))
+summary(m1_hm)
 
 # Andy notes in his book that the default optimizer 
 # doesn't always succeed in calculating for this data,
@@ -264,20 +287,21 @@ summary(___)
 # Compare! #
 ############
 
-___(___, ___)
+anova(baseline_hm, m1_hm)
 
 #################
 # Fixed Effects #
 #################
 
-m2_hm <- ___(___, .~. + ___)
-summary(___)
+m2_hm <-update(m1_hm, .~. + time_num)
+summary(m2_hm)
 
 #################
 # Random Slopes #
 #################
 
-m3_hm <- ___(___, ___ = ~ ___|___)
+m3_hm <- update(m2_hm, random = ~ time_num|Person)
+summary(m3_hm)
 
 # this allows the slopes of time_num to vary by person
 
@@ -297,10 +321,10 @@ m3_hm <- ___(___, ___ = ~ ___|___)
 # Also,
 ?corClasses
 
-m4_hm <- ___(___, 
-                ___ = ___(___, ___ = ~ ___|___))
-summary(___)
-intervals(___)
+m4_hm <- update(m3_hm, 
+                correlation = corAR1(0, form = ~ time_num|Person))
+summary(m4_hm)
+intervals(m4_hm)
 
 # Remember how your book is called "Data Analysis: A Model Comparison Approach"?
 
@@ -308,7 +332,7 @@ intervals(___)
 # More Model Comparisons! #
 ###########################
 
-___(___, ___, ___, ___, ___)
+anova(baseline_hm, m1_hm, m2_hm, m3_hm, m4_hm)
 
 #################
 ## Polynomials ##
@@ -322,25 +346,47 @@ ___(___, ___, ___, ___, ___)
 # Quadratic #
 #############
 
-m5_hm <- ___(___, .~. + ___(___^___))
-summary(___)
+m5_hm <- update(m2_hm, .~. + I(time_num^2))
+summary(m5_hm)
 
 #########
 # Cubic #
 #########
 
-m6_hm <-___(___, .~. + ___(___^___))
-summary(___)
+m6_hm <-update(m5_hm, .~. + I(time_num^3))
+summary(m6_hm)
 
 ###############
 # Alternative #
 ###############
 
-m7_hm <- ___(___, .~ ___(___, ___))
-summary(___)
+m7_hm <- update(m2_hm, .~ poly(time_num, 3))
+summary(m7_hm)
 
 ###########
 # Compare #
 ###########
 
-___(___, ___, ___, ___)
+anova(m2_hm, m5_hm, m6_hm, m7_hm)
+
+
+###########
+# Graphs! #
+###########
+
+hm_tall %>%
+  ggplot(mapping = aes(x = time_num, y = satisfaction)) +
+  geom_point(stat = "summary", position ="dodge") +
+  geom_line(position = "dodge", stat = "summary", fun.y = "mean") +
+  geom_errorbar(stat = "summary", position = "dodge", fun.data = "mean_cl_normal") +
+  theme_apa() +
+  labs(x = "Time Points", y = "Satisfaction")
+
+
+## My copy-paste script
+ggplot(data = hm_tall, mapping = aes(x = time_num, y = satisfaction)) +
+  stat_summary(fun.y = mean, geom = "point") +
+  stat_summary(fun.y = mean, geom = "line") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  theme_apa() +
+  labs(x = "Time Points", y = "Satisfaction") 
