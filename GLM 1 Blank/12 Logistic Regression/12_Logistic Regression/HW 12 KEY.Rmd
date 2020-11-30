@@ -1,0 +1,91 @@
+---
+title: 'Homework Assignment #12'
+author: "General Linear Models I"
+date: "DUE: 12/06/2019"
+output: pdf_document
+---
+## Data for this assignment
+
+Shaffer, V. A., Scherer, L. D., Focella, E. S., Hinnant, A., Len-Rios, M. E., Zikmund-Fisher, B. J. (2017). What is the story with narratives? How using personal narratives in journalism changes health behavior. Health Communication, doi: http://dx.doi.org/10.1080/10410236.2017.1333562 
+
+We are going to revisit this data one last time to practice logistic regression. This study was designed to examine the effect of a health news story about a person who developed a life-threatening illness (Stevens-Johnson Syndrome, SJS) after using Advil on subsequent Advil use (or other medication with ibuprofen as its active ingredient). 
+
+We also measured frequency of ibuprofen use at baseline (Time 1) and two weeks after reading the health news story (Time 3). We also had a brief intervention that was designed to reduce the influence of the health news story. Participants were randomly assigned to either the Control condition or the Base Rate Intervention condition. Participants in the base rate intervention condition were given detailed information about the prevalence of SJS in the population.
+
+The data file can be found in a .csv file on Canvas. The file contains data on 4 variables from 397 participants. Below are the definitions of these measures. Note the data file contains missing data labeled ‘NA’.
+
+## Items in the data file
+* Condition ('0' = Control, '1' = Base Rate Intervention)
+* Use_Time1 ‘How often have you used Advil (or other medication with ibuprofen as the active ingredient) in the last week?’ 
+* Use_Time3—‘How often have you used Advil (or other medication with ibuprofen as the active ingredient) in the last week?’ 
+* Worry: ' Although the article stated that Steven-Johnson Syndrome is quite rare, how much do you think you would worry about developing SJS if you took Advil?' 0-4 Likert scale
+
+```{r echo=TRUE}
+HW12 <- read.csv("~/Dropbox/PSYCH 8710 GLM I/Datasets/Psych Faculty datasets/Shaffer Lab/Shaffer et al 2018 HW 12.csv")
+```
+
+## Homework Questions
+1. In this assignment, we will be developing a model to predict use of ibuprofen at Time 3. The data was recorded as a frequency (# of times participant took ibuprofen in the last week). For the sake of this exercise, you will take this variable and dichotomize it into two categories (0 = no iburprofen use; 1 = used ibuprofen). Construct a frequency distribution of the outcome variable (Use_Time3) and recode your outcome variable (Use_Time3) into this format (2 points).
+
+```{r echo=TRUE}
+library(car)
+
+#Histogram
+hist(HW12$Use_Time3)
+
+#Recoding
+HW12$Use_cat <- Recode(HW12$Use_Time3, "1:12 = 1; 0 = 0")
+as.numeric(HW12$Use_cat)
+```
+
+2. Write out equations reflecting a model comparison designed to test the hypothesis that worry about developing SJS predicts ibuprofen use 2 weeks after reading the article after controlling for use of ibuprofen at baseline and base rate intervention condition (4 points).
+
+**Model Comparison**
+\begin{align*}
+\text{Model C (Compact Model): } Y_{log\ odds} &= \beta_0 + \beta_1X_{baseline} + \beta_2X_{Condition} + \epsilon_i \\
+\text{Model A (Augmented Model): } Y_{log\ odds} &= \beta_0 + \beta_1X_{baseline} + \beta_2X_{Condition} + \beta_3X_{Worry} + \epsilon_i \\
+\end{align*}
+
+3. Test this hypothesis using R (4 points).
+```{r echo=TRUE}
+
+HW12$Condition.f <- factor(HW12$Condition)
+contrasts(HW12$Condition.f) <- contr.helmert(2)
+
+ModelC <- glm(Use_cat ~ Use_Time1 + Condition.f, data = HW12, family = "binomial")
+summary(ModelC)
+ModelA <- glm(Use_cat ~ Use_Time1 + Condition.f + Worry, data = HW12, family = "binomial")
+summary(ModelA)
+
+anova(ModelC,ModelA)
+```
+
+4. Construct odds ratios associated with your final model (2 points).
+```{r echo=TRUE}
+
+exp(coef(ModelA))
+
+exp(cbind(OR = coef(ModelA), confint(ModelA)))
+```
+
+
+5. What would you conclude about the test of this hypothesis (2 points)?
+
+To make conclusions about whether worry is a significant predictor of ibuprofen use two weeks after reading the health news story, we can compare the deviance scores from Model A (the model that includes worry as a predictor) and Model C (the model without worry as a predictor). The inclusion of worry as a parameter in Model A reduced model deviance by 23.455. The reduction in deviance approximates a $\chi^{2}$ distribution; therefore we can compare our deviance score to a critical value of $\chi^{2}$ associated with a single df test (~3.84). Because our observed reduction in deviance exceeds the critical value, we can conclude that worry is a significant predictor of ibuprofen use.
+
+6. Construct a contingency table showing the frequency of use at Time 1 and Time 3. For ease of this analysis, create a table with both variables dichotomized into use vs. no use. (2 points)
+```{r echo=TRUE}
+#Recoding Use at Time 1
+HW12$UseT1_cat <- Recode(HW12$Use_Time1, "1:15 = 1; 0 = 0")
+
+HW12$UseT1_cat.f <- factor(HW12$UseT1_cat)
+table(HW12$UseT1_cat, HW12$Use_cat)
+```
+
+7. Construct a plot of your final model (4 points).
+```{r echo=TRUE}
+library(effects)
+plot(allEffects(ModelA))
+```
+
+

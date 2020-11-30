@@ -1,0 +1,87 @@
+---
+title: "Chapter 14 Lecture Notes"
+author: "Victoria Shaffer"
+date: "12/2/2018"
+output: html_document
+---
+
+# New Dataset
+```{r}
+Water_Source <- c(rep(0, 81), rep(1, 30))
+Health_Status <- c(rep(1, 49), rep(0, 32), rep(1, 6), rep(0, 24))
+ex14.1 <- data.frame(Water_Source, Health_Status)
+
+library(aod)
+library(ggplot2)
+library(car)
+```
+
+## Factor variables
+```{r}
+ex14.1$Water_Source.f <- factor(ex14.1$Water_Source)
+ex14.1$Health_Status.f <- factor(ex14.1$Health_Status)
+contrasts(ex14.1$Water_Source.f) <-c (-1, 1)
+```
+
+## Logistic Regression
+```{r}
+ModelC <- glm(Health_Status ~ 1, data = ex14.1, family = "binomial")
+summary(ModelC)
+ModelA <- glm(Health_Status ~ Water_Source.f, data = ex14.1, family = "binomial")
+summary(ModelA)
+
+anova(ModelC, ModelA)
+```
+
+## Deviance difference score
+```{r}
+modelChi <- ModelC$deviance-ModelA$deviance
+modelChi
+
+chi_df <- ModelC$df.residual-ModelA$df.residual
+chi_df
+
+chi_sq.prob <-1- pchisq(modelChi, chi_df)
+chi_sq.prob
+
+R2.hl <- modelChi/ModelA$null.deviance
+print(R2.hl)
+```
+
+#Example 2
+```{r}
+ex14.2 <- read.delim("~/Dropbox/GLM I Lecture Slides/Datasets/eel.dat")
+
+ex14.2$Intervention.f <- factor(ex14.2$Intervention)
+contrasts(ex14.2$Intervention.f) <-c (-1, 1)
+
+library(plyr)
+ex14.2$Cured.lr <- revalue(ex14.2$Cured, c("Not Cured"="0", "Cured"="1"))
+```
+
+## Model Comparison using Logistic Regression
+```{r}
+#Hypothesis 1
+ModelC2 <- glm(Cured.lr ~ 1, data = ex14.2, family = "binomial")
+summary(ModelC2)
+
+ModelA2 <- glm(Cured.lr ~ Intervention.f, data = ex14.2, family = "binomial")
+summary(ModelA2)
+
+anova(ModelC2, ModelA2)
+
+exp(coef(ModelA2))
+
+library(vcd)
+
+#Hypothesis2
+ModelC3 <- glm(Cured.lr ~ Intervention.f + Duration, data = ex14.2, family = "binomial")
+summary(ModelC3)
+
+ModelA3 <-glm(Cured.lr ~ Intervention.f + Duration + Intervention.f*Duration, data = ex14.2, family = "binomial")
+summary(ModelA3)
+
+anova(ModelC3, ModelA3)
+
+```
+

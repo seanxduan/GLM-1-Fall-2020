@@ -46,31 +46,31 @@ pickup_lines <- read_tsv("https://raw.githubusercontent.com/RipleyKyleR/class_fi
 
 # First, we're going to make the `Cured` variable into a factor.
 
-___$___ <- ___(x = ___$___)
-___(___$___)
-___(___$___)
+eel$Cured <- factor(x = eel$Cured)
+class(eel$Cured)
+summary(eel$Cured)
 
 # We were able to make it into a factor, but it looks like
 # we have `cured` as the baseline - let's change that to
 # make our comparisons later a bit easier.
 
-eel$___ <- ___(x = eel$___, ___ = "___")
-___(eel$___)
-___(eel$___)
+eel$Cured <- relevel(x = eel$Cured, ref = "Not Cured")
+class(eel$Cured)
+summary(eel$Cured)
 
 # That's better.
 
 # Now, let's also factor intervention.
 
-eel$Intervention <- ___(x = eel$Intervention)
-___(eel$Intervention)
-___(eel$Intervention)
+eel$Intervention <- factor(x = eel$Intervention)
+class(eel$Intervention)
+summary(eel$Intervention)
 
 # Same problem.
 
-eel$Intervention <- ___(x = eel$Intervention, ref = "___")
-___(eel$Intervention)
-___(eel$Intervention)
+eel$Intervention <- relevel(x = eel$Intervention, ref = "No Treatment")
+class(eel$Intervention)
+summary(eel$Intervention)
 
 #########
 # glm() #
@@ -83,13 +83,16 @@ ___(eel$Intervention)
 # We'll start off with a simple model just using intervention as a
 # predictor.
 
-eel_m1 <- ___(___ ~ ___, ___ = ___, ___ = ___)
+eel_m0 <- glm(Cured ~ 1, data = eel, family = binomial)
+summary(eel_m0)
+
+eel_m1 <- glm(Cured ~ Intervention, data = eel, family = binomial)
 
 # In this code, we need to specify `family =` to be binomial because
 # logistic regression uses a binomial distribution. If you wanted to
 # go back to normal regression, you could specify `family = gaussian`.
 
-___(eel_m1)
+summary(eel_m1)
 
 # We have a couple important bits of information in this output.
 # First, we can see whether our predictor was significant. We
@@ -101,13 +104,13 @@ ___(eel_m1)
 # need to conduct a chi-square comparison. Which we'll do shortly,
 # but first let's run our second model with both predictors.
 
-eel_m2 <- ___(___ ~ ___ + ___, ___ = ___, ___ = ___)
-___(eel_m2)
+eel_m2 <- glm(Cured ~ Intervention + Duration, data = eel, family = binomial)
+summary(eel_m2)
 
 # What do we notice here?
 # Let's compare the two models.
 
-___(eel_m1, eel_m2)
+anova(eel_m1, eel_m2)
 
 # As we can see, the residual deviances of the two models
 # are the same - meaning that adding `Duration` did not have
@@ -117,17 +120,17 @@ ___(eel_m1, eel_m2)
 # Speaking of chi-squares, because we've determined our first
 # model to be superior, let's calculate our p-value for the 
 # chi-square comparison of model 1 to the baseline to see if
-# it is a significant iprovement.
+# it is a significant improvement.
 
-___(eel_m1)
+summary(eel_m1)
 
-chi_m1 <- ___$___ - ___$___
+chi_m1 <- eel_m1$null.deviance - eel_m1$deviance
 chi_m1
 
-chi_df_m1 <- ___$___ - ___$___
+chi_df_m1 <- eel_m1$df.null - eel_m1$df.residual
 chi_df_m1
 
-chi_prob_m1 <- ___ - ___(___ = ___, ___ = ___)
+chi_prob_m1 <- 1 - pchisq(q = chi_m1, df = chi_df_m1)
 chi_prob_m1
 
 # This gives us the p-value for our chi-square comparison.
@@ -138,12 +141,12 @@ chi_prob_m1
 # the odds ratio is the exponential of the b-values of your
 # coefficients.
 
-___(___ = ___(___ = ___))
+exp(x = coef(object = eel_m1))
 
 # It's also a good idea to provide confidence intervals around
 # your odds ratios.
 
-___(___ = ___(___ = ___(___ = ___), ___(___ = ___, ___ = ___)))
+exp(x = cbind(OR = coef(object = eel_m1), confint(object = eel_m1, level = 0.95)))
 
 # To interpret the odds ratios, we need to remember back to how we
 # factored the intervention. Since our reference group is "No Treatment,"
@@ -154,7 +157,21 @@ ___(___ = ___(___ = ___(___ = ___), ___(___ = ___, ___ = ___)))
 # It's also a good idea to visualize the results of your analysis.
 # This can easily be done with `plot()` as shown below.
 
-___(___(___ = ___))
+plot(allEffects(mod = eel_m1))
+
+##############
+## Recoding ##
+##############
+
+eel$dur_cat <- Recode(eel$Duration, "4:6 = 0; 7:10 = 1")
+as.numeric(eel$dur_cat)
+
+
+#######################
+## Contingency Table ##
+#######################
+
+table(eel$Duration, eel$dur_cat)
 
 #####################################
 ## Multinomial Logistic Regression ##
@@ -171,33 +188,33 @@ ___(___(___ = ___))
 # `summary()` before and after assigning levels and labels in 
 # `factor()`.
 
-pickup_lines$Success <- ___(x = pickup_lines$Success)
-___(pickup_lines$Success)
-___(pickup_lines$Success)
+pickup_lines$Success <- factor(x = pickup_lines$Success)
+class(pickup_lines$Success)
+summary(pickup_lines$Success)
 
-pickup_lines$Success <- ___(x = pickup_lines$Success, ___ = c("No response/Walk Off", "Get Phone Number", "Go Home with Person"),
-                            ___ = c("No response/Walk Off", "Get Phone Number", "Go Home with Person"))
-___(pickup_lines$Success)
-___(pickup_lines$Success)
+pickup_lines$Success <- factor(x = pickup_lines$Success, levels = c("No response/Walk Off", "Get Phone Number", "Go Home with Person"),
+                            label = c("No response/Walk Off", "Get Phone Number", "Go Home with Person"))
+class(pickup_lines$Success)
+summary(pickup_lines$Success)
 
 # Now, let's also factor `gender`.
 
-pickup_lines$Gender <- ___(x = pickup_lines$Gender)
-___(pickup_lines$Gender)
-___(pickup_lines$Gender)
+pickup_lines$Gender <- factor(x = pickup_lines$Gender)
+class(pickup_lines$Gender)
+summary(pickup_lines$Gender)
 
 # Because we're interested in seeing if female responses differ
 # from male responses, it makes more sense from an interpretation
 # perspective to have males as the baseline instead of females.
 
-pickup_lines$Gender <- ___(x = pickup_lines$Gender, ___ = "___")
-___(pickup_lines$Gender)
-___(pickup_lines$Gender)
+pickup_lines$Gender <- relevel(x = pickup_lines$Gender, ref = "Male")
+class(pickup_lines$Gender)
+summary(pickup_lines$Gender)
 
 # We now need to get our dataset in a format that will allow us to
 # conduct our multinomial logistic regression.
 
-ml_lines <- ___(___ = ___, ___ = "___", ___ = "___")
+ml_lines <- mlogit.data(data = pickup_lines, choice = "Success", shape = "wide")
 
 # Notice that the resulting data frame has 3 times as many observations.
 # That is because each of the original observations now has an observation
@@ -208,39 +225,37 @@ ml_lines <- ___(___ = ___, ___ = "___", ___ = "___")
 # `lm()` and `glm()`, except we also need to specify a reference level for
 # the model.
 
-lines_m1 <- ___(___ ~ ___ | ___ + ___ + ___ + ___ + ___:___ + ___:___, 
-                   ___ = ___, 
-                   ___ = "___")
-___(lines_m1)
+lines_m1 <- mlogit(Success ~ 1 | Good_Mate + Funny + Gender + Sex + Gender:Sex + Funny:Gender, 
+                   data = ml_lines, 
+                   reflevel = "No response/Walk Off")
+summary(lines_m1)
 
 # This output may be a bit difficult to interpret as is, so let's
 # calculate some odds ratios.
 
-___(___ = ___(___ = ___(___ = ___), ___(___ = ___, ___ = ___)))
+exp(x = cbind(OR = coef(object = lines_m1), confint(object = lines_m1, level = 0.95)))
 
 # For interpretation, remember that males are our reference group.
 
 # And it doesn't hurt to make some plots. But first, we should pull
 # the predicted probabilities for our observations out of our model.
 
-___$___ <- ___$___$___
+ml_lines$pred_prob <- lines_m1$model$probabilities
 
-___(___ = ___, ___ = ___(___ = ___, ___ = ___, ___ = ___)) +
-  ___(___ = "___", ___ = "___", ___ = "___") +
-  ___(~ ___) +
-  ___(___ = ___, ___ = "___") +
-  ___(___ = "Sexuality of Pick-Up-Line", ___ = "Predicted Probability")
+ggplot(data = ml_lines, mapping = aes(x = Sex, y = pred_prob, color = alt)) +
+  geom_line(position = "dodge", stat = "summary", fun.y = "mean") +
+  facet_wrap(~ Gender) +
+  theme_apa(legend.use.title = FALSE, legend.pos = "bottom") +
+  labs(s = "Sexuality of Pick-Up-Line", y = "Predicted Probability")
 
-___(___ = ___, ___ = ___(___ = ___, ___ = ___, ___ = ___)) +
-  ___(___ = "___", ___ = "___", ___ = "___") +
-  ___(~ ___) +
-  ___(___ = ___, ___ = "___") +
-  ___(___ = "Humor of Pick-Up-Line", ___ = "Predicted Probability")
+ggplot(data = ml_lines, mapping = aes(x = Funny, y = pred_prob, color = alt)) +
+  geom_line(position = "dodge", stat = "summary", fun.y = "mean") +
+  facet_wrap(~ Gender) +
+  theme_apa(legend.use.title = FALSE, legend.pos = "bottom") +
+  labs(s = "Sexuality of Pick-Up-Line", y = "Predicted Probability")
 
-___(___ = ___, ___ = ___(___ = ___, ___ = ___, ___ = ___)) +
-  ___(___ = "___", ___ = "___", ___ = "___") +
-  ___(~ ___) +
-  ___(___ = ___, ___ = "___") +
-  ___(___ = "Wholesomeness of Pick-Up-Line", ___ = "Predicted Probability")
-
-
+ggplot(data = ml_lines, mapping = aes(x = Good_Mate, y = pred_prob, color = alt)) +
+  geom_line(position = "dodge", stat = "summary", fun.y = "mean") +
+  facet_wrap(~ Gender) +
+  theme_apa(legend.use.title = FALSE, legend.pos = "bottom") +
+  labs(s = "Sexuality of Pick-Up-Line", y = "Predicted Probability")
